@@ -1,0 +1,13 @@
+<h2>Create User</h2>
+
+<input [(ngModel)]="user.name" placeholder="Name"><br>
+<input [(ngModel)]="user.email" placeholder="Email"><br>
+<input [(ngModel)]="user.password" placeholder="Password"><br>
+
+<select [(ngModel)]="user.role">
+  <option value="SUPERVISOR">Supervisor</option>
+  <option value="TL">Team Lead</option>
+  <option value="DEVELOPER">Developer</option>
+</select><br><br>
+
+<button (click)="createUser()">Create User</button>

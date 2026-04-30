@@ -1,0 +1,81 @@
+<section class="dashboard">
+  <header class="dashboard-header">
+    <div>
+      <p class="eyebrow">Team Lead</p>
+      <h2>TL Dashboard</h2>
+    </div>
+    <span class="tl-id">TL ID: {{ tlId }}</span>
+  </header>
+
+  <div class="dashboard-grid">
+    <section class="panel">
+      <div class="panel-header">
+        <h3>Assigned Tasks</h3>
+        <span>{{ tasks.length }} tasks</span>
+      </div>
+
+      <p *ngIf="tasks.length === 0" class="empty-state">
+        No tasks assigned to this team lead yet.
+      </p>
+
+      <ul class="task-list" *ngIf="tasks.length > 0">
+        <li
+          *ngFor="let task of tasks"
+          class="task-item"
+          [class.selected]="selectedTask?.id === task.id"
+        >
+          <button type="button" class="task-button" (click)="selectTask(task)">
+            <span class="task-title">{{ task.title }}</span>
+            <span class="task-description">{{ task.description }}</span>
+          </button>
+          <span class="status">{{ task.status }}</span>
+        </li>
+      </ul>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <h3>Create Subtask</h3>
+        <span *ngIf="selectedTask">Task #{{ selectedTask.id }}</span>
+      </div>
+
+      <div class="selected-task" *ngIf="selectedTask; else noTaskSelected">
+        <span>Selected task</span>
+        <strong>{{ selectedTask.title }}</strong>
+      </div>
+
+      <ng-template #noTaskSelected>
+        <p class="empty-state">Select a task before creating a subtask.</p>
+      </ng-template>
+
+      <form class="subtask-form" #subTaskForm="ngForm" (ngSubmit)="createSubTask()">
+        <label>
+          Subtask Title
+          <input
+            type="text"
+            name="title"
+            [(ngModel)]="subTask.title"
+            placeholder="Enter subtask title"
+            required
+          >
+        </label>
+
+        <label>
+          Developer
+          <select name="assignedTo" [(ngModel)]="subTask.assignedTo" required>
+            <option value="" disabled>Select developer</option>
+            <option *ngFor="let dev of developers" [value]="dev.id">
+              {{ dev.name }}
+            </option>
+          </select>
+        </label>
+
+        <button type="submit" [disabled]="!canCreateSubTask()">
+          {{ isSubmitting ? 'Creating...' : 'Create Subtask' }}
+        </button>
+      </form>
+
+      <p class="message" *ngIf="message">{{ message }}</p>
+    </section>
+  </div>
+</section>

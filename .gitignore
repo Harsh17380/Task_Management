@@ -1,0 +1,19 @@
+# Archives/backups
+*.zip
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.idea/
+.vscode/
+
+# Java build output
+target/
+build/
+
+# Angular/Node output
+node_modules/
+dist/
+.angular/

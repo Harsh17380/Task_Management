@@ -1,0 +1,12 @@
+<h2>Create Task</h2>
+
+<input [(ngModel)]="task.title" placeholder="Title"><br>
+<input [(ngModel)]="task.description" placeholder="Description"><br>
+
+<select [(ngModel)]="task.assignedTo">
+  <option *ngFor="let tl of tls" [value]="tl.id">
+    {{tl.name}}
+  </option>
+</select><br><br>
+
+<button (click)="createTask()">Create Task</button>
