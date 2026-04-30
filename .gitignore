@@ -1,5 +1,6 @@
 # Archives/backups
 *.zip
+*.log
 
 # OS files
 .DS_Store

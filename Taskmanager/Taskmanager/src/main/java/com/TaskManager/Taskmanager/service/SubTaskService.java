@@ -1,6 +1,8 @@
 package com.TaskManager.Taskmanager.service;
 
-import com.TaskManager.Taskmanager.controller.SubTask;
+import com.TaskManager.Taskmanager.dto.ApiResponse;
+import com.TaskManager.Taskmanager.dto.SubTaskRequestDTO;
+import com.TaskManager.Taskmanager.model.SubTask;
 import com.TaskManager.Taskmanager.model.User;
 import com.TaskManager.Taskmanager.repository.SubTaskRepository;
 import com.TaskManager.Taskmanager.repository.TaskRepository;
@@ -22,36 +24,55 @@ public class SubTaskService {
     @Autowired
     private TaskRepository taskRepository;
 
-    public String createSubTask(SubTask subTask) {
+    public ApiResponse createSubTask(SubTaskRequestDTO dto) {
+
+        if (dto.getTaskId() <= 0) {
+            return new ApiResponse(false, "Task is required");
+        }
+
+        if (dto.getTitle() == null || dto.getTitle().trim().isEmpty()) {
+            return new ApiResponse(false, "Subtask title is required");
+        }
 
         // Validate Developer
         List<User> devs = userRepository.findByRole("DEVELOPER");
 
         boolean isValidDev = devs.stream()
-                .anyMatch(user -> user.getId() == subTask.getAssignedTo());
+                .anyMatch(user -> user.getId() == dto.getAssignedTo());
 
         if (!isValidDev) {
-            return "Invalid Developer ID";
+            return new ApiResponse(false, "Invalid Developer ID");
         }
 
+        SubTask subTask = new SubTask();
+        subTask.setTaskId(dto.getTaskId());
+        subTask.setTitle(dto.getTitle().trim());
+        subTask.setAssignedTo(dto.getAssignedTo());
         subTask.setStatus("PENDING");
 
         subTaskRepository.createSubTask(subTask);
-        return "Subtask created and assigned to Developer";
+        return new ApiResponse(true, "Subtask created and assigned to Developer");
     }
 
     public List<SubTask> getSubTasksForDeveloper(int devId) {
         return subTaskRepository.findByDeveloper(devId);
     }
 
-    public String updateStatus(int subTaskId, String status) {
+    public ApiResponse updateStatus(int subTaskId, String status) {
 
-        subTaskRepository.updateStatus(subTaskId, status);
+        if (status == null) {
+            return new ApiResponse(false, "Status is required");
+        }
 
-        // Get taskId of this subtask
-        // (you need a method for this if not already present)
+        String normalizedStatus = status.trim().toUpperCase();
 
-        int taskId = subTaskRepository.findTaskIdBySubTaskId(subTaskId); // we'll define this
+        if (!"PENDING".equals(normalizedStatus) && !"DONE".equals(normalizedStatus)) {
+            return new ApiResponse(false, "Invalid status. Allowed values: PENDING, DONE");
+        }
+
+        int taskId = subTaskRepository.findTaskIdBySubTaskId(subTaskId);
+
+        subTaskRepository.updateStatus(subTaskId, normalizedStatus);
 
         int remaining = subTaskRepository.countIncompleteSubTasks(taskId);
 
@@ -61,6 +82,6 @@ public class SubTaskService {
             taskRepository.updateTaskStatus(taskId, "IN_PROGRESS");
         }
 
-        return "Status updated";
+        return new ApiResponse(true, "Status updated");
     }
 }

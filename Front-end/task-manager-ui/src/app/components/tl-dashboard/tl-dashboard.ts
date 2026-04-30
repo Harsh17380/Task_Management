@@ -12,7 +12,8 @@ import { ApiService } from '../../services/api.service';
 })
 export class TlDashboardComponent implements OnInit {
 
-  tlId = 2; // Hardcoded for now. Later this should come from login/session.
+  selectedTlId = '';
+  teamLeads: any[] = [];
   tasks: any[] = [];
   developers: any[] = [];
   selectedTask: any = null;
@@ -28,19 +29,56 @@ export class TlDashboardComponent implements OnInit {
   constructor(private api: ApiService) {}
 
   ngOnInit() {
-    this.loadTasks();
+    this.loadTeamLeads();
     this.loadDevelopers();
   }
 
+  loadTeamLeads() {
+    this.api.getUsersByRole('TL').subscribe({
+      next: (res: any) => {
+        this.teamLeads = res;
+
+        if (this.teamLeads.length > 0) {
+          this.selectedTlId = String(this.teamLeads[0].id);
+          this.loadTasks();
+        }
+      },
+      error: (err) => {
+        console.error('Error loading team leads:', err);
+        this.message = 'Could not load team leads. Please check backend server.';
+      }
+    });
+  }
+
   loadTasks() {
-    this.api.getTasksForTL(this.tlId).subscribe((res: any) => {
-      this.tasks = res;
+    if (!this.selectedTlId) {
+      this.tasks = [];
+      return;
+    }
+
+    this.api.getTasksForTL(Number(this.selectedTlId)).subscribe({
+      next: (res: any) => {
+        this.tasks = res;
+        this.resetSubTaskForm();
+      },
+      error: (err) => {
+        console.error('Error loading tasks:', err);
+        this.tasks = [];
+        this.message = 'Could not load tasks for selected team lead.';
+      }
     });
   }
 
   loadDevelopers() {
-    this.api.getUsersByRole('DEVELOPER').subscribe((res: any) => {
-      this.developers = res;
+    this.api.getUsersByRole('DEVELOPER').subscribe({
+      next: (res: any) => {
+        this.developers = res;
+      },
+      error: (err) => {
+        console.error('Error loading developers:', err);
+        this.developers = [];
+        this.message = 'Could not load developers. Please check backend server.';
+      }
     });
   }
 
@@ -48,6 +86,11 @@ export class TlDashboardComponent implements OnInit {
     this.selectedTask = task;
     this.subTask.taskId = task.id;
     this.message = '';
+  }
+
+  onTeamLeadChange() {
+    this.message = '';
+    this.loadTasks();
   }
 
   canCreateSubTask() {

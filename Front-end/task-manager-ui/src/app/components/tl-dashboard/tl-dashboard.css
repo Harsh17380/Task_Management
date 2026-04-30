@@ -27,7 +27,7 @@
 
 .eyebrow,
 .panel-header span,
-.tl-id,
+.tl-selector,
 .selected-task span {
   color: #6b7280;
   font-size: 13px;
@@ -43,12 +43,18 @@ h3 {
   margin: 0;
 }
 
-.tl-id,
 .status {
   border: 1px solid #d1d5db;
   border-radius: 6px;
   padding: 6px 10px;
   background: #fff;
+}
+
+.tl-selector {
+  display: grid;
+  gap: 6px;
+  min-width: 260px;
+  font-weight: 700;
 }
 
 .dashboard-grid {

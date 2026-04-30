@@ -1,4 +1,4 @@
-package com.TaskManager.Taskmanager.controller;
+package com.TaskManager.Taskmanager.model;
 
 public class SubTask {
 
@@ -7,9 +7,6 @@ public class SubTask {
     private String title;
     private int assignedTo; // Developer ID
     private String status;
-
-    // getters & setters
-
 
     public int getId() {
         return id;

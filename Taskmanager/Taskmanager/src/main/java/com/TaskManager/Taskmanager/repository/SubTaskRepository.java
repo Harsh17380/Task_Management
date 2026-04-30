@@ -1,6 +1,6 @@
 package com.TaskManager.Taskmanager.repository;
 
-import com.TaskManager.Taskmanager.controller.SubTask;
+import com.TaskManager.Taskmanager.model.SubTask;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;

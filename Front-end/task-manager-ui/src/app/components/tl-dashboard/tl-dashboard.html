@@ -4,7 +4,19 @@
       <p class="eyebrow">Team Lead</p>
       <h2>TL Dashboard</h2>
     </div>
-    <span class="tl-id">TL ID: {{ tlId }}</span>
+    <label class="tl-selector">
+      Viewing tasks for
+      <select
+        name="selectedTl"
+        [(ngModel)]="selectedTlId"
+        (ngModelChange)="onTeamLeadChange()"
+      >
+        <option value="" disabled>Select team lead</option>
+        <option *ngFor="let tl of teamLeads" [value]="tl.id">
+          {{ tl.name }} (ID: {{ tl.id }})
+        </option>
+      </select>
+    </label>
   </header>
 
   <div class="dashboard-grid">
@@ -15,7 +27,7 @@
       </div>
 
       <p *ngIf="tasks.length === 0" class="empty-state">
-        No tasks assigned to this team lead yet.
+        {{ selectedTlId ? 'No tasks assigned to this team lead yet.' : 'Select a team lead to view assigned tasks.' }}
       </p>
 
       <ul class="task-list" *ngIf="tasks.length > 0">
