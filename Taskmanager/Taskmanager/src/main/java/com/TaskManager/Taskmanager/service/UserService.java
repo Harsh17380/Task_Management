@@ -15,10 +15,10 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    public ApiResponse createUser(UserRequestDTO dto) {
+    public ApiResponse<Void> createUser(UserRequestDTO dto) {
 
         if (dto.getRole() == null) {
-            return new ApiResponse(false, "Role is required");
+            return new ApiResponse<>(false, "Role is required");
         }
 
         User user = new User();
@@ -29,7 +29,7 @@ public class UserService {
 
         userRepository.save(user);
 
-        return new ApiResponse(true, "User created successfully");
+        return new ApiResponse<>(true, "User created successfully");
     }
 
     public List<User> getUsersByRole(String role) {

@@ -1,24 +1,29 @@
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-/*import { RegisterComponent } from './components/register/register.component';
-import { TaskCreateComponent } from './components/task-create/task-create';
-
-
-@Component({
-  selector: 'app-root',
-  standalone: true,
-  imports: [RegisterComponent,TaskCreateComponent],
-  template: `<app-register></app-register>`
-})
-export class App {}*/
-
+import { DeveloperDashboardComponent } from './components/developer-dashboard/developer-dashboard';
+import { RegisterComponent } from './components/register/register.component';
 import { TaskCreateComponent } from './components/task-create/task-create';
 import { TlDashboardComponent } from './components/tl-dashboard/tl-dashboard';
 
+type ActiveView = 'register' | 'task-create' | 'tl-dashboard' | 'developer-dashboard';
+
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [TlDashboardComponent],
-  //template: `<app-task-create></app-task-create>`
-  template: `<app-tl-dashboard></app-tl-dashboard>`
+  imports: [
+    CommonModule,
+    RegisterComponent,
+    TaskCreateComponent,
+    TlDashboardComponent,
+    DeveloperDashboardComponent
+  ],
+  templateUrl: './app.html',
+  styleUrl: './app.css'
 })
-export class App {}
+export class App {
+  activeView: ActiveView = 'tl-dashboard';
+
+  setActiveView(view: ActiveView) {
+    this.activeView = view;
+  }
+}

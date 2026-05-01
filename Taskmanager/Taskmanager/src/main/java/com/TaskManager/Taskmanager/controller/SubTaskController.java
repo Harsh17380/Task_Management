@@ -20,21 +20,22 @@ public class SubTaskController {
 
     // TL creates subtask
     @PostMapping
-    public ResponseEntity<ApiResponse> createSubTask(@RequestBody SubTaskRequestDTO dto) {
-        ApiResponse response = subTaskService.createSubTask(dto);
+    public ResponseEntity<ApiResponse<Void>> createSubTask(@RequestBody SubTaskRequestDTO dto) {
+        ApiResponse<Void> response = subTaskService.createSubTask(dto);
         return ResponseEntity.ok(response);
     }
 
     // Developer views subtasks
     @GetMapping("/dev/{devId}")
-    public List<SubTask> getSubTasks(@PathVariable int devId) {
-        return subTaskService.getSubTasksForDeveloper(devId);
+    public ResponseEntity<ApiResponse<List<SubTask>>> getSubTasks(@PathVariable int devId) {
+        List<SubTask> subTasks = subTaskService.getSubTasksForDeveloper(devId);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Subtasks fetched successfully", subTasks));
     }
 
     // Developer updates status
     @PutMapping("/{id}/status")
-    public ResponseEntity<ApiResponse> updateStatus(@PathVariable int id, @RequestParam String status) {
-        ApiResponse response = subTaskService.updateStatus(id, status);
+    public ResponseEntity<ApiResponse<Void>> updateStatus(@PathVariable int id, @RequestParam String status) {
+        ApiResponse<Void> response = subTaskService.updateStatus(id, status);
         return ResponseEntity.ok(response);
     }
 

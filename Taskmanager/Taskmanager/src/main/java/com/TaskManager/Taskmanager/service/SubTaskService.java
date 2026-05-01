@@ -24,14 +24,14 @@ public class SubTaskService {
     @Autowired
     private TaskRepository taskRepository;
 
-    public ApiResponse createSubTask(SubTaskRequestDTO dto) {
+    public ApiResponse<Void> createSubTask(SubTaskRequestDTO dto) {
 
         if (dto.getTaskId() <= 0) {
-            return new ApiResponse(false, "Task is required");
+            return new ApiResponse<>(false, "Task is required");
         }
 
         if (dto.getTitle() == null || dto.getTitle().trim().isEmpty()) {
-            return new ApiResponse(false, "Subtask title is required");
+            return new ApiResponse<>(false, "Subtask title is required");
         }
 
         // Validate Developer
@@ -41,7 +41,7 @@ public class SubTaskService {
                 .anyMatch(user -> user.getId() == dto.getAssignedTo());
 
         if (!isValidDev) {
-            return new ApiResponse(false, "Invalid Developer ID");
+            return new ApiResponse<>(false, "Invalid Developer ID");
         }
 
         SubTask subTask = new SubTask();
@@ -51,23 +51,23 @@ public class SubTaskService {
         subTask.setStatus("PENDING");
 
         subTaskRepository.createSubTask(subTask);
-        return new ApiResponse(true, "Subtask created and assigned to Developer");
+        return new ApiResponse<>(true, "Subtask created and assigned to Developer");
     }
 
     public List<SubTask> getSubTasksForDeveloper(int devId) {
         return subTaskRepository.findByDeveloper(devId);
     }
 
-    public ApiResponse updateStatus(int subTaskId, String status) {
+    public ApiResponse<Void> updateStatus(int subTaskId, String status) {
 
         if (status == null) {
-            return new ApiResponse(false, "Status is required");
+            return new ApiResponse<>(false, "Status is required");
         }
 
         String normalizedStatus = status.trim().toUpperCase();
 
         if (!"PENDING".equals(normalizedStatus) && !"DONE".equals(normalizedStatus)) {
-            return new ApiResponse(false, "Invalid status. Allowed values: PENDING, DONE");
+            return new ApiResponse<>(false, "Invalid status. Allowed values: PENDING, DONE");
         }
 
         int taskId = subTaskRepository.findTaskIdBySubTaskId(subTaskId);
@@ -82,6 +82,6 @@ public class SubTaskService {
             taskRepository.updateTaskStatus(taskId, "IN_PROGRESS");
         }
 
-        return new ApiResponse(true, "Status updated");
+        return new ApiResponse<>(true, "Status updated");
     }
 }

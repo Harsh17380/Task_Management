@@ -20,14 +20,15 @@ public class UserController {
 
     // Register user
     @PostMapping
-    public ResponseEntity<ApiResponse> createUser(@RequestBody UserRequestDTO dto) {
-        ApiResponse response = userService.createUser(dto);
+    public ResponseEntity<ApiResponse<Void>> createUser(@RequestBody UserRequestDTO dto) {
+        ApiResponse<Void> response = userService.createUser(dto);
         return ResponseEntity.ok(response);
     }
 
     // Get users by role
     @GetMapping("/role/{role}")
-    public List<User> getUsersByRole(@PathVariable String role) {
-        return userService.getUsersByRole(role);
+    public ResponseEntity<ApiResponse<List<User>>> getUsersByRole(@PathVariable String role) {
+        List<User> users = userService.getUsersByRole(role);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Users fetched successfully", users));
     }
 }

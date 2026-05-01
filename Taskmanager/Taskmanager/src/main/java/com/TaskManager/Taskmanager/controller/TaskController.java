@@ -19,13 +19,14 @@ public class TaskController {
     private TaskService taskService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse> createTask(@RequestBody TaskRequestDTO dto) {
-        ApiResponse response = taskService.createTask(dto);
+    public ResponseEntity<ApiResponse<Void>> createTask(@RequestBody TaskRequestDTO dto) {
+        ApiResponse<Void> response = taskService.createTask(dto);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/tl/{tlId}")
-    public List<Task> getTasksForTL(@PathVariable int tlId) {
-        return taskService.getTasksForTL(tlId);
+    public ResponseEntity<ApiResponse<List<Task>>> getTasksForTL(@PathVariable int tlId) {
+        List<Task> tasks = taskService.getTasksForTL(tlId);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Tasks fetched successfully", tasks));
     }
 }

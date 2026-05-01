@@ -20,10 +20,10 @@ public class TaskService {
     @Autowired
     private UserRepository userRepository;
 
-    public ApiResponse createTask(TaskRequestDTO dto) {
+    public ApiResponse<Void> createTask(TaskRequestDTO dto) {
 
         if (dto.getTitle() == null || dto.getTitle().trim().isEmpty()) {
-            return new ApiResponse(false, "Task title is required");
+            return new ApiResponse<>(false, "Task title is required");
         }
 
         // Validate role (VERY IMPORTANT)
@@ -33,7 +33,7 @@ public class TaskService {
                 .anyMatch(user -> user.getId() == dto.getAssignedTo());
 
         if (!isValidTL) {
-            return new ApiResponse(false, "Invalid TL ID");
+            return new ApiResponse<>(false, "Invalid TL ID");
         }
 
         Task task = new Task();
@@ -44,7 +44,7 @@ public class TaskService {
         task.setStatus("PENDING");
 
         taskRepository.createTask(task);
-        return new ApiResponse(true, "Task created and assigned to TL");
+        return new ApiResponse<>(true, "Task created and assigned to TL");
     }
 
     public List<Task> getTasksForTL(int tlId) {

@@ -1,0 +1,55 @@
+<section class="developer-dashboard">
+  <header class="dashboard-header">
+    <div>
+      <p class="eyebrow">Developer</p>
+      <h2>Developer Dashboard</h2>
+    </div>
+
+    <label class="developer-selector">
+      Viewing subtasks for
+      <select
+        name="selectedDeveloper"
+        [(ngModel)]="selectedDeveloperId"
+        (ngModelChange)="onDeveloperChange()"
+      >
+        <option value="" disabled>Select developer</option>
+        <option *ngFor="let dev of developers" [value]="dev.id">
+          {{ dev.name }} (ID: {{ dev.id }})
+        </option>
+      </select>
+    </label>
+  </header>
+
+  <section class="panel">
+    <div class="panel-header">
+      <h3>Assigned Subtasks</h3>
+      <span>{{ subTasks.length }} subtasks</span>
+    </div>
+
+    <p *ngIf="subTasks.length === 0" class="empty-state">
+      {{ selectedDeveloperId ? 'No subtasks assigned to this developer yet.' : 'Select a developer to view subtasks.' }}
+    </p>
+
+    <ul class="subtask-list" *ngIf="subTasks.length > 0">
+      <li *ngFor="let subTask of subTasks" class="subtask-item">
+        <div>
+          <span class="subtask-title">{{ subTask.title }}</span>
+          <span class="subtask-meta">Task ID: {{ subTask.taskId }}</span>
+        </div>
+
+        <div class="subtask-actions">
+          <span class="status">{{ subTask.status }}</span>
+          <button
+            type="button"
+            (click)="markDone(subTask)"
+            [disabled]="subTask.status === 'DONE' || updatingSubTaskId === subTask.id"
+          >
+            {{ updatingSubTaskId === subTask.id ? 'Updating...' : 'Mark Done' }}
+          </button>
+        </div>
+      </li>
+    </ul>
+
+    <p class="message" *ngIf="message">{{ message }}</p>
+  </section>
+</section>
