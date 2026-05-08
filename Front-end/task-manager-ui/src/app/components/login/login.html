@@ -1,0 +1,36 @@
+<section class="login-page">
+  <div class="login-panel">
+    <p class="eyebrow">Task Management System</p>
+    <h1>Sign In</h1>
+
+    <form class="login-form" (ngSubmit)="login()">
+      <label>
+        Email
+        <input
+          type="email"
+          name="email"
+          [(ngModel)]="credentials.email"
+          placeholder="Enter email"
+          required
+        >
+      </label>
+
+      <label>
+        Password
+        <input
+          type="password"
+          name="password"
+          [(ngModel)]="credentials.password"
+          placeholder="Enter password"
+          required
+        >
+      </label>
+
+      <button type="submit" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Signing in...' : 'Sign In' }}
+      </button>
+    </form>
+
+    <p class="message" *ngIf="message">{{ message }}</p>
+  </div>
+</section>

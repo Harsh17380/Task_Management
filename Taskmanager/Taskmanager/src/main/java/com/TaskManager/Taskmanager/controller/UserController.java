@@ -1,7 +1,9 @@
 package com.TaskManager.Taskmanager.controller;
 
 import com.TaskManager.Taskmanager.dto.ApiResponse;
+import com.TaskManager.Taskmanager.dto.LoginRequestDTO;
 import com.TaskManager.Taskmanager.dto.UserRequestDTO;
+import com.TaskManager.Taskmanager.dto.UserResponseDTO;
 import com.TaskManager.Taskmanager.model.User;
 import com.TaskManager.Taskmanager.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,12 @@ public class UserController {
     @PostMapping
     public ResponseEntity<ApiResponse<Void>> createUser(@RequestBody UserRequestDTO dto) {
         ApiResponse<Void> response = userService.createUser(dto);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse<UserResponseDTO>> login(@RequestBody LoginRequestDTO dto) {
+        ApiResponse<UserResponseDTO> response = userService.login(dto);
         return ResponseEntity.ok(response);
     }
 

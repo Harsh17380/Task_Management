@@ -1,12 +1,31 @@
-<h2>Create Task</h2>
+<section class="form-panel">
+  <h2>Create Task</h2>
 
-<input [(ngModel)]="task.title" placeholder="Title"><br>
-<input [(ngModel)]="task.description" placeholder="Description"><br>
+  <form class="form-grid" (ngSubmit)="createTask()">
+    <label>
+      Title
+      <input name="title" [(ngModel)]="task.title" placeholder="Title">
+    </label>
 
-<select [(ngModel)]="task.assignedTo">
-  <option *ngFor="let tl of tls" [value]="tl.id">
-    {{tl.name}}
-  </option>
-</select><br><br>
+    <label>
+      Description
+      <input name="description" [(ngModel)]="task.description" placeholder="Description">
+    </label>
 
-<button (click)="createTask()">Create Task</button>
+    <label>
+      Team Lead
+      <select name="assignedTo" [(ngModel)]="task.assignedTo">
+        <option value="" disabled>Select team lead</option>
+        <option *ngFor="let tl of tls" [value]="tl.id">
+          {{ tl.name }}
+        </option>
+      </select>
+    </label>
+
+    <button type="submit" [disabled]="isSubmitting">
+      {{ isSubmitting ? 'Creating...' : 'Create Task' }}
+    </button>
+  </form>
+
+  <p class="message" *ngIf="message">{{ message }}</p>
+</section>

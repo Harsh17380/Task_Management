@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class UserRepository {
@@ -33,5 +34,26 @@ public class UserRepository {
             user.setRole(rs.getString("role"));
             return user;
         });
+    }
+
+    public boolean existsByIdAndRole(int id, String role) {
+        String sql = "SELECT COUNT(*) FROM users WHERE id = ? AND role = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id, role);
+        return count != null && count > 0;
+    }
+
+    public Optional<User> findByEmailAndPassword(String email, String password) {
+        String sql = "SELECT * FROM users WHERE email = ? AND password = ?";
+        List<User> users = jdbcTemplate.query(sql, new Object[]{email, password}, (rs, rowNum) -> {
+            User user = new User();
+            user.setId(rs.getInt("id"));
+            user.setName(rs.getString("name"));
+            user.setEmail(rs.getString("email"));
+            user.setPassword(rs.getString("password"));
+            user.setRole(rs.getString("role"));
+            return user;
+        });
+
+        return users.stream().findFirst();
     }
 }

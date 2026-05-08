@@ -1,9 +1,9 @@
 package com.TaskManager.Taskmanager.service;
 
 import com.TaskManager.Taskmanager.dto.ApiResponse;
+import com.TaskManager.Taskmanager.dto.SupervisorTaskDTO;
 import com.TaskManager.Taskmanager.dto.TaskRequestDTO;
 import com.TaskManager.Taskmanager.model.Task;
-import com.TaskManager.Taskmanager.model.User;
 import com.TaskManager.Taskmanager.repository.TaskRepository;
 import com.TaskManager.Taskmanager.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,13 +26,11 @@ public class TaskService {
             return new ApiResponse<>(false, "Task title is required");
         }
 
-        // Validate role (VERY IMPORTANT)
-        List<User> tlList = userRepository.findByRole("TL");
+        if (!userRepository.existsByIdAndRole(dto.getCreatedBy(), "SUPERVISOR")) {
+            return new ApiResponse<>(false, "Invalid Supervisor ID");
+        }
 
-        boolean isValidTL = tlList.stream()
-                .anyMatch(user -> user.getId() == dto.getAssignedTo());
-
-        if (!isValidTL) {
+        if (!userRepository.existsByIdAndRole(dto.getAssignedTo(), "TL")) {
             return new ApiResponse<>(false, "Invalid TL ID");
         }
 
@@ -49,5 +47,9 @@ public class TaskService {
 
     public List<Task> getTasksForTL(int tlId) {
         return taskRepository.findTasksByTL(tlId);
+    }
+
+    public List<SupervisorTaskDTO> getTasksForSupervisor(int supervisorId) {
+        return taskRepository.findTasksBySupervisor(supervisorId);
     }
 }

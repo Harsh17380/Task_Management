@@ -1,13 +1,30 @@
-<main class="app-shell">
+<app-login *ngIf="!currentUser" (loggedIn)="onLoggedIn($event)"></app-login>
+
+<main class="app-shell" *ngIf="currentUser">
   <header class="app-header">
     <div>
       <p class="eyebrow">Task Management System</p>
-      <h1>Role Workflow</h1>
+      <h1>{{ currentUser.role }} Workspace</h1>
+    </div>
+
+    <div class="user-summary">
+      <span>{{ currentUser.name }}</span>
+      <small>{{ currentUser.email }}</small>
+      <button type="button" (click)="logout()">Logout</button>
     </div>
   </header>
 
   <nav class="view-tabs" aria-label="Workflow views">
     <button
+      *ngIf="canAccess('supervisor-dashboard')"
+      type="button"
+      [class.active]="activeView === 'supervisor-dashboard'"
+      (click)="setActiveView('supervisor-dashboard')"
+    >
+      Task Tracking
+    </button>
+    <button
+      *ngIf="canAccess('register')"
       type="button"
       [class.active]="activeView === 'register'"
       (click)="setActiveView('register')"
@@ -15,6 +32,7 @@
       Register User
     </button>
     <button
+      *ngIf="canAccess('task-create')"
       type="button"
       [class.active]="activeView === 'task-create'"
       (click)="setActiveView('task-create')"
@@ -22,6 +40,7 @@
       Create Task
     </button>
     <button
+      *ngIf="canAccess('tl-dashboard')"
       type="button"
       [class.active]="activeView === 'tl-dashboard'"
       (click)="setActiveView('tl-dashboard')"
@@ -29,6 +48,7 @@
       TL Dashboard
     </button>
     <button
+      *ngIf="canAccess('developer-dashboard')"
       type="button"
       [class.active]="activeView === 'developer-dashboard'"
       (click)="setActiveView('developer-dashboard')"
@@ -38,9 +58,22 @@
   </nav>
 
   <section class="view-panel">
-    <app-register *ngIf="activeView === 'register'"></app-register>
-    <app-task-create *ngIf="activeView === 'task-create'"></app-task-create>
-    <app-tl-dashboard *ngIf="activeView === 'tl-dashboard'"></app-tl-dashboard>
-    <app-developer-dashboard *ngIf="activeView === 'developer-dashboard'"></app-developer-dashboard>
+    <app-supervisor-dashboard
+      *ngIf="activeView === 'supervisor-dashboard' && canAccess('supervisor-dashboard')"
+      [currentUser]="currentUser"
+    ></app-supervisor-dashboard>
+    <app-register *ngIf="activeView === 'register' && canAccess('register')"></app-register>
+    <app-task-create
+      *ngIf="activeView === 'task-create' && canAccess('task-create')"
+      [currentUser]="currentUser"
+    ></app-task-create>
+    <app-tl-dashboard
+      *ngIf="activeView === 'tl-dashboard' && canAccess('tl-dashboard')"
+      [currentUser]="currentUser"
+    ></app-tl-dashboard>
+    <app-developer-dashboard
+      *ngIf="activeView === 'developer-dashboard' && canAccess('developer-dashboard')"
+      [currentUser]="currentUser"
+    ></app-developer-dashboard>
   </section>
 </main>

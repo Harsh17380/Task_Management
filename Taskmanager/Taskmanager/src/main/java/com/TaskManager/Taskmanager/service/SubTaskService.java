@@ -3,7 +3,6 @@ package com.TaskManager.Taskmanager.service;
 import com.TaskManager.Taskmanager.dto.ApiResponse;
 import com.TaskManager.Taskmanager.dto.SubTaskRequestDTO;
 import com.TaskManager.Taskmanager.model.SubTask;
-import com.TaskManager.Taskmanager.model.User;
 import com.TaskManager.Taskmanager.repository.SubTaskRepository;
 import com.TaskManager.Taskmanager.repository.TaskRepository;
 import com.TaskManager.Taskmanager.repository.UserRepository;
@@ -34,13 +33,15 @@ public class SubTaskService {
             return new ApiResponse<>(false, "Subtask title is required");
         }
 
-        // Validate Developer
-        List<User> devs = userRepository.findByRole("DEVELOPER");
+        if (!userRepository.existsByIdAndRole(dto.getTlId(), "TL")) {
+            return new ApiResponse<>(false, "Invalid TL ID");
+        }
 
-        boolean isValidDev = devs.stream()
-                .anyMatch(user -> user.getId() == dto.getAssignedTo());
+        if (!taskRepository.existsByIdAndAssignedTo(dto.getTaskId(), dto.getTlId())) {
+            return new ApiResponse<>(false, "Task is not assigned to this TL");
+        }
 
-        if (!isValidDev) {
+        if (!userRepository.existsByIdAndRole(dto.getAssignedTo(), "DEVELOPER")) {
             return new ApiResponse<>(false, "Invalid Developer ID");
         }
 
@@ -51,6 +52,7 @@ public class SubTaskService {
         subTask.setStatus("PENDING");
 
         subTaskRepository.createSubTask(subTask);
+        updateParentTaskStatus(dto.getTaskId());
         return new ApiResponse<>(true, "Subtask created and assigned to Developer");
     }
 
@@ -66,22 +68,37 @@ public class SubTaskService {
 
         String normalizedStatus = status.trim().toUpperCase();
 
-        if (!"PENDING".equals(normalizedStatus) && !"DONE".equals(normalizedStatus)) {
-            return new ApiResponse<>(false, "Invalid status. Allowed values: PENDING, DONE");
+        if (!"PENDING".equals(normalizedStatus)
+                && !"IN_PROGRESS".equals(normalizedStatus)
+                && !"DONE".equals(normalizedStatus)) {
+            return new ApiResponse<>(false, "Invalid status. Allowed values: PENDING, IN_PROGRESS, DONE");
         }
 
         int taskId = subTaskRepository.findTaskIdBySubTaskId(subTaskId);
 
         subTaskRepository.updateStatus(subTaskId, normalizedStatus);
-
-        int remaining = subTaskRepository.countIncompleteSubTasks(taskId);
-
-        if (remaining == 0) {
-            taskRepository.updateTaskStatus(taskId, "COMPLETED");
-        } else {
-            taskRepository.updateTaskStatus(taskId, "IN_PROGRESS");
-        }
+        updateParentTaskStatus(taskId);
 
         return new ApiResponse<>(true, "Status updated");
+    }
+
+    private void updateParentTaskStatus(int taskId) {
+        int total = subTaskRepository.countSubTasksByTaskId(taskId);
+
+        if (total == 0) {
+            taskRepository.updateTaskStatus(taskId, "PENDING");
+            return;
+        }
+
+        int done = subTaskRepository.countSubTasksByTaskIdAndStatus(taskId, "DONE");
+        int inProgress = subTaskRepository.countSubTasksByTaskIdAndStatus(taskId, "IN_PROGRESS");
+
+        if (done == total) {
+            taskRepository.updateTaskStatus(taskId, "COMPLETED");
+        } else if (done > 0 || inProgress > 0) {
+            taskRepository.updateTaskStatus(taskId, "IN_PROGRESS");
+        } else {
+            taskRepository.updateTaskStatus(taskId, "PENDING");
+        }
     }
 }

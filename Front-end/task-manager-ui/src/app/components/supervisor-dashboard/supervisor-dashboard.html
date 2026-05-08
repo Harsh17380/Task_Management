@@ -1,0 +1,60 @@
+<section class="supervisor-dashboard">
+  <header class="dashboard-header">
+    <div>
+      <p class="eyebrow">Supervisor</p>
+      <h2>Task Tracking</h2>
+    </div>
+
+    <button type="button" (click)="loadTasks()" [disabled]="isLoading">
+      {{ isLoading ? 'Refreshing...' : 'Refresh' }}
+    </button>
+  </header>
+
+  <section class="summary-grid">
+    <div class="summary-card">
+      <span>Total</span>
+      <strong>{{ tasks.length }}</strong>
+    </div>
+    <div class="summary-card">
+      <span>Pending</span>
+      <strong>{{ countByStatus('PENDING') }}</strong>
+    </div>
+    <div class="summary-card">
+      <span>In Progress</span>
+      <strong>{{ countByStatus('IN_PROGRESS') }}</strong>
+    </div>
+    <div class="summary-card">
+      <span>Completed</span>
+      <strong>{{ countByStatus('COMPLETED') }}</strong>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">
+      <h3>Created Tasks</h3>
+      <span>{{ tasks.length }} tasks</span>
+    </div>
+
+    <p *ngIf="isLoading" class="empty-state">Loading tasks...</p>
+
+    <p *ngIf="!isLoading && tasks.length === 0" class="empty-state">
+      No tasks created by this supervisor yet.
+    </p>
+
+    <ul class="task-list" *ngIf="!isLoading && tasks.length > 0">
+      <li *ngFor="let task of tasks" class="task-item">
+        <div>
+          <span class="task-title">{{ task.title }}</span>
+          <span class="task-description">{{ task.description }}</span>
+          <span class="task-meta">Assigned TL: {{ task.assignedToName }} (ID: {{ task.assignedTo }})</span>
+        </div>
+
+        <span class="status" [class.completed]="task.status === 'COMPLETED'">
+          {{ task.status }}
+        </span>
+      </li>
+    </ul>
+
+    <p class="message" *ngIf="message">{{ message }}</p>
+  </section>
+</section>

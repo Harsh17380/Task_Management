@@ -5,6 +5,7 @@ public class SubTaskRequestDTO {
     private int taskId;
     private String title;
     private int assignedTo;
+    private int tlId;
 
     // getters & setters
 
@@ -30,5 +31,13 @@ public class SubTaskRequestDTO {
 
     public void setAssignedTo(int assignedTo) {
         this.assignedTo = assignedTo;
+    }
+
+    public int getTlId() {
+        return tlId;
+    }
+
+    public void setTlId(int tlId) {
+        this.tlId = tlId;
     }
 }

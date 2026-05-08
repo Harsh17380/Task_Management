@@ -44,6 +44,16 @@ public class SubTaskRepository {
         return jdbcTemplate.queryForObject(sql, Integer.class, taskId);
     }
 
+    public int countSubTasksByTaskId(int taskId) {
+        String sql = "SELECT COUNT(*) FROM sub_tasks WHERE task_id = ?";
+        return jdbcTemplate.queryForObject(sql, Integer.class, taskId);
+    }
+
+    public int countSubTasksByTaskIdAndStatus(int taskId, String status) {
+        String sql = "SELECT COUNT(*) FROM sub_tasks WHERE task_id = ? AND status = ?";
+        return jdbcTemplate.queryForObject(sql, Integer.class, taskId, status);
+    }
+
     public int findTaskIdBySubTaskId(int subTaskId) {
         String sql = "SELECT task_id FROM sub_tasks WHERE id = ?";
         return jdbcTemplate.queryForObject(sql, Integer.class, subTaskId);

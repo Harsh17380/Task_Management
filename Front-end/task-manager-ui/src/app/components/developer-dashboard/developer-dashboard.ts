@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { finalize } from 'rxjs';
 import { ApiService } from '../../services/api.service';
 
 @Component({
@@ -12,16 +13,27 @@ import { ApiService } from '../../services/api.service';
 })
 export class DeveloperDashboardComponent implements OnInit {
 
+  @Input() currentUser: any = null;
+
   selectedDeveloperId = '';
   developers: any[] = [];
   subTasks: any[] = [];
   message = '';
-  updatingSubTaskId = 0;
+  updatingSubTaskIds = new Set<number>();
 
-  constructor(private api: ApiService) {}
+  constructor(
+    private api: ApiService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
-    this.loadDevelopers();
+    if (this.currentUser?.role === 'DEVELOPER') {
+      this.developers = [this.currentUser];
+      this.selectedDeveloperId = String(this.currentUser.id);
+      this.loadSubTasks();
+    } else {
+      this.loadDevelopers();
+    }
   }
 
   loadDevelopers() {
@@ -65,22 +77,42 @@ export class DeveloperDashboardComponent implements OnInit {
     this.loadSubTasks();
   }
 
-  markDone(subTask: any) {
-    this.updatingSubTaskId = subTask.id;
-    this.message = '';
+  updateStatus(subTask: any, status: string) {
+    if (subTask.status === status || this.updatingSubTaskIds.has(subTask.id)) {
+      return;
+    }
 
-    this.api.updateSubTaskStatus(subTask.id, 'DONE').subscribe({
+    const previousStatus = subTask.status;
+    this.updatingSubTaskIds.add(subTask.id);
+    subTask.status = status;
+    this.message = '';
+    this.cdr.detectChanges();
+
+    this.api.updateSubTaskStatus(subTask.id, status)
+      .pipe(finalize(() => {
+        this.updatingSubTaskIds.delete(subTask.id);
+        this.cdr.detectChanges();
+      }))
+      .subscribe({
       next: (res: any) => {
         this.message = res.message;
-        this.loadSubTasks();
+        if (res.success) {
+          this.loadSubTasks();
+        }
       },
       error: (err) => {
         console.error('Error updating subtask:', err);
+        subTask.status = previousStatus;
         this.message = 'Could not update subtask status.';
-      },
-      complete: () => {
-        this.updatingSubTaskId = 0;
       }
     });
+  }
+
+  isUpdating(subTaskId: number) {
+    return this.updatingSubTaskIds.has(subTaskId);
+  }
+
+  countByStatus(status: string) {
+    return this.subTasks.filter((subTask) => subTask.status === status).length;
   }
 }

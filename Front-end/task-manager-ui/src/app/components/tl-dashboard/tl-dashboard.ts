@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { finalize } from 'rxjs';
 import { ApiService } from '../../services/api.service';
 
 @Component({
@@ -11,6 +12,8 @@ import { ApiService } from '../../services/api.service';
   styleUrl: './tl-dashboard.css'
 })
 export class TlDashboardComponent implements OnInit {
+
+  @Input() currentUser: any = null;
 
   selectedTlId = '';
   teamLeads: any[] = [];
@@ -23,13 +26,25 @@ export class TlDashboardComponent implements OnInit {
   subTask = {
     taskId: 0,
     title: '',
-    assignedTo: ''
+    assignedTo: '',
+    tlId: 0
   };
 
-  constructor(private api: ApiService) {}
+  constructor(
+    private api: ApiService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
-    this.loadTeamLeads();
+    if (this.currentUser?.role === 'TL') {
+      this.teamLeads = [this.currentUser];
+      this.selectedTlId = String(this.currentUser.id);
+      this.subTask.tlId = this.currentUser.id;
+      this.loadTasks();
+    } else {
+      this.loadTeamLeads();
+    }
+
     this.loadDevelopers();
   }
 
@@ -40,6 +55,7 @@ export class TlDashboardComponent implements OnInit {
 
         if (this.teamLeads.length > 0) {
           this.selectedTlId = String(this.teamLeads[0].id);
+          this.subTask.tlId = Number(this.selectedTlId);
           this.loadTasks();
         }
       },
@@ -90,16 +106,22 @@ export class TlDashboardComponent implements OnInit {
 
   onTeamLeadChange() {
     this.message = '';
+    this.subTask.tlId = Number(this.selectedTlId);
     this.loadTasks();
   }
 
   canCreateSubTask() {
     return Boolean(
       this.subTask.taskId &&
+      this.subTask.tlId &&
       this.subTask.title.trim() &&
       this.subTask.assignedTo &&
       !this.isSubmitting
     );
+  }
+
+  countByStatus(status: string) {
+    return this.tasks.filter((task) => task.status === status).length;
   }
 
   createSubTask() {
@@ -110,18 +132,23 @@ export class TlDashboardComponent implements OnInit {
 
     this.isSubmitting = true;
     this.message = '';
+    this.cdr.detectChanges();
 
-    this.api.createSubTask(this.subTask).subscribe({
+    this.api.createSubTask(this.subTask)
+      .pipe(finalize(() => {
+        this.isSubmitting = false;
+        this.cdr.detectChanges();
+      }))
+      .subscribe({
       next: (res: any) => {
         this.message = res.message;
-        this.resetSubTaskForm();
+        if (res.success) {
+          this.resetSubTaskForm();
+        }
       },
       error: (err) => {
         console.error('ERROR:', err);
         this.message = 'Error creating subtask';
-      },
-      complete: () => {
-        this.isSubmitting = false;
       }
     });
   }
@@ -131,7 +158,8 @@ export class TlDashboardComponent implements OnInit {
     this.subTask = {
       taskId: 0,
       title: '',
-      assignedTo: ''
+      assignedTo: '',
+      tlId: Number(this.selectedTlId)
     };
   }
 }

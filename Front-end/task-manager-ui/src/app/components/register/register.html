@@ -1,13 +1,36 @@
-<h2>Create User</h2>
+<section class="form-panel">
+  <h2>Create User</h2>
 
-<input [(ngModel)]="user.name" placeholder="Name"><br>
-<input [(ngModel)]="user.email" placeholder="Email"><br>
-<input [(ngModel)]="user.password" placeholder="Password"><br>
+  <form class="form-grid" (ngSubmit)="createUser()">
+    <label>
+      Name
+      <input name="name" [(ngModel)]="user.name" placeholder="Name">
+    </label>
 
-<select [(ngModel)]="user.role">
-  <option value="SUPERVISOR">Supervisor</option>
-  <option value="TL">Team Lead</option>
-  <option value="DEVELOPER">Developer</option>
-</select><br><br>
+    <label>
+      Email
+      <input name="email" [(ngModel)]="user.email" placeholder="Email">
+    </label>
 
-<button (click)="createUser()">Create User</button>
+    <label>
+      Password
+      <input name="password" type="password" [(ngModel)]="user.password" placeholder="Password">
+    </label>
+
+    <label>
+      Role
+      <select name="role" [(ngModel)]="user.role">
+        <option value="" disabled>Select role</option>
+        <option value="SUPERVISOR">Supervisor</option>
+        <option value="TL">Team Lead</option>
+        <option value="DEVELOPER">Developer</option>
+      </select>
+    </label>
+
+    <button type="submit" [disabled]="isSubmitting">
+      {{ isSubmitting ? 'Creating...' : 'Create User' }}
+    </button>
+  </form>
+
+  <p class="message" *ngIf="message">{{ message }}</p>
+</section>

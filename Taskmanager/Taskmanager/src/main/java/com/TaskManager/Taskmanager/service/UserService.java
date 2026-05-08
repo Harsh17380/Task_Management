@@ -1,13 +1,16 @@
 package com.TaskManager.Taskmanager.service;
 
 import com.TaskManager.Taskmanager.dto.ApiResponse;
+import com.TaskManager.Taskmanager.dto.LoginRequestDTO;
 import com.TaskManager.Taskmanager.dto.UserRequestDTO;
+import com.TaskManager.Taskmanager.dto.UserResponseDTO;
 import com.TaskManager.Taskmanager.model.User;
 import com.TaskManager.Taskmanager.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -34,5 +37,23 @@ public class UserService {
 
     public List<User> getUsersByRole(String role) {
         return userRepository.findByRole(role);
+    }
+
+    public ApiResponse<UserResponseDTO> login(LoginRequestDTO dto) {
+        if (dto.getEmail() == null || dto.getEmail().trim().isEmpty()) {
+            return new ApiResponse<>(false, "Email is required");
+        }
+
+        if (dto.getPassword() == null || dto.getPassword().isEmpty()) {
+            return new ApiResponse<>(false, "Password is required");
+        }
+
+        Optional<User> user = userRepository.findByEmailAndPassword(dto.getEmail().trim(), dto.getPassword());
+
+        if (user.isEmpty()) {
+            return new ApiResponse<>(false, "Invalid email or password");
+        }
+
+        return new ApiResponse<>(true, "Login successful", new UserResponseDTO(user.get()));
     }
 }

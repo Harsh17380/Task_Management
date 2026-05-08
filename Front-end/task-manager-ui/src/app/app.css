@@ -13,6 +13,10 @@
 }
 
 .app-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
   margin-bottom: 18px;
 }
 
@@ -53,4 +57,38 @@ h1 {
 
 .view-panel {
   min-height: 520px;
+}
+
+.user-summary {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+}
+
+.user-summary span {
+  font-weight: 700;
+}
+
+.user-summary small {
+  color: #6b7280;
+}
+
+.user-summary button {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  margin-top: 6px;
+  padding: 8px 10px;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+@media (max-width: 760px) {
+  .app-header {
+    flex-direction: column;
+  }
+
+  .user-summary {
+    justify-items: start;
+  }
 }

@@ -7,6 +7,7 @@
     <label class="tl-selector">
       Viewing tasks for
       <select
+        *ngIf="currentUser?.role !== 'TL'; else currentTl"
         name="selectedTl"
         [(ngModel)]="selectedTlId"
         (ngModelChange)="onTeamLeadChange()"
@@ -16,8 +17,30 @@
           {{ tl.name }} (ID: {{ tl.id }})
         </option>
       </select>
+      <ng-template #currentTl>
+        <span class="locked-user">{{ currentUser.name }} (ID: {{ currentUser.id }})</span>
+      </ng-template>
     </label>
   </header>
+
+  <section class="summary-grid">
+    <div class="summary-card">
+      <span>Total</span>
+      <strong>{{ tasks.length }}</strong>
+    </div>
+    <div class="summary-card">
+      <span>Pending</span>
+      <strong>{{ countByStatus('PENDING') }}</strong>
+    </div>
+    <div class="summary-card">
+      <span>In Progress</span>
+      <strong>{{ countByStatus('IN_PROGRESS') }}</strong>
+    </div>
+    <div class="summary-card">
+      <span>Completed</span>
+      <strong>{{ countByStatus('COMPLETED') }}</strong>
+    </div>
+  </section>
 
   <div class="dashboard-grid">
     <section class="panel">

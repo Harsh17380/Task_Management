@@ -8,6 +8,7 @@
     <label class="developer-selector">
       Viewing subtasks for
       <select
+        *ngIf="currentUser?.role !== 'DEVELOPER'; else currentDeveloper"
         name="selectedDeveloper"
         [(ngModel)]="selectedDeveloperId"
         (ngModelChange)="onDeveloperChange()"
@@ -17,10 +18,32 @@
           {{ dev.name }} (ID: {{ dev.id }})
         </option>
       </select>
+      <ng-template #currentDeveloper>
+        <span class="locked-user">{{ currentUser.name }} (ID: {{ currentUser.id }})</span>
+      </ng-template>
     </label>
   </header>
 
   <section class="panel">
+    <section class="summary-grid">
+      <div class="summary-card">
+        <span>Total</span>
+        <strong>{{ subTasks.length }}</strong>
+      </div>
+      <div class="summary-card">
+        <span>Pending</span>
+        <strong>{{ countByStatus('PENDING') }}</strong>
+      </div>
+      <div class="summary-card">
+        <span>In Progress</span>
+        <strong>{{ countByStatus('IN_PROGRESS') }}</strong>
+      </div>
+      <div class="summary-card">
+        <span>Done</span>
+        <strong>{{ countByStatus('DONE') }}</strong>
+      </div>
+    </section>
+
     <div class="panel-header">
       <h3>Assigned Subtasks</h3>
       <span>{{ subTasks.length }} subtasks</span>
@@ -40,11 +63,23 @@
         <div class="subtask-actions">
           <span class="status">{{ subTask.status }}</span>
           <button
+            *ngIf="subTask.status === 'PENDING'"
             type="button"
-            (click)="markDone(subTask)"
-            [disabled]="subTask.status === 'DONE' || updatingSubTaskId === subTask.id"
+            (click)="updateStatus(subTask, 'IN_PROGRESS')"
+            [disabled]="isUpdating(subTask.id)"
           >
-            {{ updatingSubTaskId === subTask.id ? 'Updating...' : 'Mark Done' }}
+            {{ isUpdating(subTask.id) ? 'Saving...' : 'Start' }}
+          </button>
+          <button
+            *ngIf="subTask.status === 'IN_PROGRESS'"
+            type="button"
+            (click)="updateStatus(subTask, 'DONE')"
+            [disabled]="isUpdating(subTask.id)"
+          >
+            {{ isUpdating(subTask.id) ? 'Saving...' : 'Mark Done' }}
+          </button>
+          <button *ngIf="subTask.status === 'DONE'" type="button" disabled>
+            Done
           </button>
         </div>
       </li>

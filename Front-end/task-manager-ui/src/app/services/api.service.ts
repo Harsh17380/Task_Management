@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { map } from 'rxjs';
+import { Observable, map, shareReplay, tap, timeout } from 'rxjs';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -14,40 +14,84 @@ interface ApiResponse<T> {
 export class ApiService {
 
   private baseUrl = 'http://localhost:8080';
+  private requestTimeoutMs = 15000;
+  private usersByRoleCache = new Map<string, Observable<any[]>>();
 
   constructor(private http: HttpClient) {}
 
+  login(credentials: { email: string; password: string }) {
+    return this.http
+      .post<ApiResponse<any>>(`${this.baseUrl}/users/login`, credentials)
+      .pipe(timeout(this.requestTimeoutMs));
+  }
+
   createUser(user: any) {
-    return this.http.post(`${this.baseUrl}/users`, user);
+    return this.http
+      .post(`${this.baseUrl}/users`, user)
+      .pipe(
+        timeout(this.requestTimeoutMs),
+        tap(() => this.usersByRoleCache.clear())
+      );
   }
 
   getUsersByRole(role: string) {
-    return this.http
-      .get<ApiResponse<any[]>>(`${this.baseUrl}/users/role/${role}`)
-      .pipe(map((res) => res.data || []));
+    if (!this.usersByRoleCache.has(role)) {
+      const request$ = this.http
+        .get<ApiResponse<any[]>>(`${this.baseUrl}/users/role/${role}`)
+        .pipe(
+          timeout(this.requestTimeoutMs),
+          map((res) => res.data || []),
+          shareReplay(1)
+        );
+
+      this.usersByRoleCache.set(role, request$);
+    }
+
+    return this.usersByRoleCache.get(role)!;
   }
 
   createTask(task: any) {
-    return this.http.post(`${this.baseUrl}/tasks`, task);
+    return this.http
+      .post(`${this.baseUrl}/tasks`, task)
+      .pipe(timeout(this.requestTimeoutMs));
   }
 
   getTasksForTL(tlId: number) {
     return this.http
       .get<ApiResponse<any[]>>(`${this.baseUrl}/tasks/tl/${tlId}`)
-      .pipe(map((res) => res.data || []));
+      .pipe(
+        timeout(this.requestTimeoutMs),
+        map((res) => res.data || [])
+      );
+  }
+
+  getTasksForSupervisor(supervisorId: number) {
+    return this.http
+      .get<ApiResponse<any[]>>(`${this.baseUrl}/tasks/supervisor/${supervisorId}`)
+      .pipe(
+        timeout(this.requestTimeoutMs),
+        map((res) => res.data || [])
+      );
   }
 
   createSubTask(subTask: any) {
-    return this.http.post(`${this.baseUrl}/subtasks`, subTask);
+    return this.http
+      .post(`${this.baseUrl}/subtasks`, subTask)
+      .pipe(timeout(this.requestTimeoutMs));
   }
 
   getSubTasksForDeveloper(devId: number) {
     return this.http
       .get<ApiResponse<any[]>>(`${this.baseUrl}/subtasks/dev/${devId}`)
-      .pipe(map((res) => res.data || []));
+      .pipe(
+        timeout(this.requestTimeoutMs),
+        map((res) => res.data || [])
+      );
   }
 
   updateSubTaskStatus(subTaskId: number, status: string) {
-    return this.http.put(`${this.baseUrl}/subtasks/${subTaskId}/status?status=${status}`, {});
+    return this.http
+      .put(`${this.baseUrl}/subtasks/${subTaskId}/status?status=${encodeURIComponent(status)}`, {})
+      .pipe(timeout(this.requestTimeoutMs));
   }
 }
