@@ -24,7 +24,7 @@ public class SubTaskRepository {
 
     public List<SubTask> findByDeveloper(int devId) {
         String sql = "SELECT * FROM sub_tasks WHERE assigned_to = ?";
-        return jdbcTemplate.query(sql, new Object[]{devId}, (rs, rowNum) -> {
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
             SubTask st = new SubTask();
             st.setId(rs.getInt("id"));
             st.setTaskId(rs.getInt("task_id"));
@@ -32,30 +32,35 @@ public class SubTaskRepository {
             st.setAssignedTo(rs.getInt("assigned_to"));
             st.setStatus(rs.getString("status"));
             return st;
-        });
+        }, devId);
     }
 
     public int updateStatus(int subTaskId, String status) {
         String sql = "UPDATE sub_tasks SET status = ? WHERE id = ?";
         return jdbcTemplate.update(sql, status, subTaskId);
     }
+
     public int countIncompleteSubTasks(int taskId) {
         String sql = "SELECT COUNT(*) FROM sub_tasks WHERE task_id = ? AND status != 'DONE'";
-        return jdbcTemplate.queryForObject(sql, Integer.class, taskId);
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, taskId);
+        return count != null ? count : 0;
     }
 
     public int countSubTasksByTaskId(int taskId) {
         String sql = "SELECT COUNT(*) FROM sub_tasks WHERE task_id = ?";
-        return jdbcTemplate.queryForObject(sql, Integer.class, taskId);
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, taskId);
+        return count != null ? count : 0;
     }
 
     public int countSubTasksByTaskIdAndStatus(int taskId, String status) {
         String sql = "SELECT COUNT(*) FROM sub_tasks WHERE task_id = ? AND status = ?";
-        return jdbcTemplate.queryForObject(sql, Integer.class, taskId, status);
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, taskId, status);
+        return count != null ? count : 0;
     }
 
     public int findTaskIdBySubTaskId(int subTaskId) {
         String sql = "SELECT task_id FROM sub_tasks WHERE id = ?";
-        return jdbcTemplate.queryForObject(sql, Integer.class, subTaskId);
+        Integer taskId = jdbcTemplate.queryForObject(sql, Integer.class, subTaskId);
+        return taskId != null ? taskId : 0;
     }
 }

@@ -26,7 +26,7 @@ public class TaskRepository {
 
     public List<Task> findTasksByTL(int tlId) {
         String sql = "SELECT * FROM tasks WHERE assigned_to = ?";
-        return jdbcTemplate.query(sql, new Object[]{tlId}, (rs, rowNum) -> {
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
             Task task = new Task();
             task.setId(rs.getInt("id"));
             task.setTitle(rs.getString("title"));
@@ -35,7 +35,7 @@ public class TaskRepository {
             task.setCreatedBy(rs.getInt("created_by"));
             task.setStatus(rs.getString("status"));
             return task;
-        });
+        }, tlId);
     }
 
     public int updateTaskStatus(int taskId, String status) {
@@ -59,7 +59,7 @@ public class TaskRepository {
                 ORDER BY t.id DESC
                 """;
 
-        return jdbcTemplate.query(sql, new Object[]{supervisorId}, (rs, rowNum) -> {
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
             SupervisorTaskDTO task = new SupervisorTaskDTO();
             task.setId(rs.getInt("id"));
             task.setTitle(rs.getString("title"));
@@ -69,6 +69,6 @@ public class TaskRepository {
             task.setCreatedBy(rs.getInt("created_by"));
             task.setStatus(rs.getString("status"));
             return task;
-        });
+        }, supervisorId);
     }
 }

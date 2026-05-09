@@ -25,7 +25,7 @@ public class UserRepository {
 
     public List<User> findByRole(String role) {
         String sql = "SELECT * FROM users WHERE role = ?";
-        return jdbcTemplate.query(sql, new Object[]{role}, (rs, rowNum) -> {
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
             User user = new User();
             user.setId(rs.getInt("id"));
             user.setName(rs.getString("name"));
@@ -33,7 +33,7 @@ public class UserRepository {
             user.setPassword(rs.getString("password"));
             user.setRole(rs.getString("role"));
             return user;
-        });
+        }, role);
     }
 
     public boolean existsByIdAndRole(int id, String role) {
@@ -44,7 +44,7 @@ public class UserRepository {
 
     public Optional<User> findByEmailAndPassword(String email, String password) {
         String sql = "SELECT * FROM users WHERE email = ? AND password = ?";
-        List<User> users = jdbcTemplate.query(sql, new Object[]{email, password}, (rs, rowNum) -> {
+        List<User> users = jdbcTemplate.query(sql, (rs, rowNum) -> {
             User user = new User();
             user.setId(rs.getInt("id"));
             user.setName(rs.getString("name"));
@@ -52,7 +52,7 @@ public class UserRepository {
             user.setPassword(rs.getString("password"));
             user.setRole(rs.getString("role"));
             return user;
-        });
+        }, email, password);
 
         return users.stream().findFirst();
     }
