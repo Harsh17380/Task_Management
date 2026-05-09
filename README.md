@@ -220,7 +220,7 @@ spring.datasource.password=YOUR_PASSWORD
 
 * Subtask creation and management
 
-(Add screenshots here later)
+(Will add screenshots later)
 
 ---
 
