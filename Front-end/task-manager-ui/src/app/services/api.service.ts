@@ -13,7 +13,7 @@ interface ApiResponse<T> {
 })
 export class ApiService {
 
-  private baseUrl = 'http://localhost:8080';
+  private baseUrl = 'https://task-management-en0u.onrender.com';
   private requestTimeoutMs = 15000;
   private usersByRoleCache = new Map<string, Observable<any[]>>();
 
