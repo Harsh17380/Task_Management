@@ -64,6 +64,8 @@ public class SecurityConfig {
                         .requestMatchers("/subtasks/dev/**").authenticated()
                         .requestMatchers("/subtasks/*/status").hasRole("DEVELOPER")
 
+                        .requestMatchers("/users/change-password").authenticated()
+
                         .anyRequest().authenticated()
                 )
 

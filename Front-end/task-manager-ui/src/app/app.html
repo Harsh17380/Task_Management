@@ -39,6 +39,7 @@
     >
       Create Task
     </button>
+
     <button
       *ngIf="canAccess('tl-dashboard')"
       type="button"
@@ -54,6 +55,14 @@
       (click)="setActiveView('developer-dashboard')"
     >
       Developer Dashboard
+    </button>
+    <button
+      *ngIf="canAccess('change-password')"
+      type="button"
+      [class.active]="activeView === 'change-password'"
+      (click)="setActiveView('change-password')"
+    >
+      Change Password
     </button>
   </nav>
 
@@ -75,5 +84,8 @@
       *ngIf="activeView === 'developer-dashboard' && canAccess('developer-dashboard')"
       [currentUser]="currentUser"
     ></app-developer-dashboard>
+    <app-change-password
+      *ngIf="activeView === 'change-password' && canAccess('change-password')"
+    ></app-change-password>
   </section>
 </main>

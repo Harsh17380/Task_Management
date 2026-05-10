@@ -1,10 +1,6 @@
 package com.TaskManager.Taskmanager.service;
 
-import com.TaskManager.Taskmanager.dto.ApiResponse;
-import com.TaskManager.Taskmanager.dto.LoginRequestDTO;
-import com.TaskManager.Taskmanager.dto.LoginResponseDTO;
-import com.TaskManager.Taskmanager.dto.UserRequestDTO;
-import com.TaskManager.Taskmanager.dto.UserResponseDTO;
+import com.TaskManager.Taskmanager.dto.*;
 import com.TaskManager.Taskmanager.model.User;
 import com.TaskManager.Taskmanager.repository.UserRepository;
 import com.TaskManager.Taskmanager.security.JwtUtil;
@@ -83,4 +79,33 @@ public class UserService {
         return new ApiResponse<>(true, "Login successful", responseData);
     }
 
+    public ApiResponse<Void> changePassword(
+            int userId,
+            ChangePasswordDTO dto
+    ) {
+
+        Optional<User> userOptional = userRepository.findById(userId);
+
+        if (userOptional.isEmpty()) {
+            return new ApiResponse<>(false, "User not found");
+        }
+
+        User user = userOptional.get();
+
+        // Verify old password
+        if (!passwordEncoder.matches(
+                dto.getOldPassword(),
+                user.getPassword()
+        )) {
+            return new ApiResponse<>(false, "Old password is incorrect");
+        }
+
+        // Encrypt new password
+        String encodedPassword =
+                passwordEncoder.encode(dto.getNewPassword());
+
+        userRepository.updatePassword(userId, encodedPassword);
+
+        return new ApiResponse<>(true, "Password changed successfully");
+    }
 }

@@ -71,4 +71,32 @@ public class UserRepository {
 
         return users.stream().findFirst();
     }
+
+    public int updatePassword(int userId, String newPassword) {
+
+        String sql = "UPDATE users SET password = ? WHERE id = ?";
+
+        return jdbcTemplate.update(sql, newPassword, userId);
+    }
+
+    public Optional<User> findById(int id) {
+
+        String sql = "SELECT * FROM users WHERE id = ?";
+
+        List<User> users = jdbcTemplate.query(sql, (rs, rowNum) -> {
+
+            User user = new User();
+
+            user.setId(rs.getInt("id"));
+            user.setName(rs.getString("name"));
+            user.setEmail(rs.getString("email"));
+            user.setPassword(rs.getString("password"));
+            user.setRole(rs.getString("role"));
+
+            return user;
+
+        }, id);
+
+        return users.stream().findFirst();
+    }
 }

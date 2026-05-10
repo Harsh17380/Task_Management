@@ -1,12 +1,9 @@
 package com.TaskManager.Taskmanager.controller;
 
-import com.TaskManager.Taskmanager.dto.ApiResponse;
-import com.TaskManager.Taskmanager.dto.LoginRequestDTO;
-import com.TaskManager.Taskmanager.dto.LoginResponseDTO;
-import com.TaskManager.Taskmanager.dto.UserRequestDTO;
-import com.TaskManager.Taskmanager.dto.UserResponseDTO;
+import com.TaskManager.Taskmanager.dto.*;
 import com.TaskManager.Taskmanager.model.User;
 import com.TaskManager.Taskmanager.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,6 +27,21 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponseDTO>> login(@RequestBody LoginRequestDTO dto) {
         ApiResponse<LoginResponseDTO> response = userService.login(dto);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<ApiResponse<Void>> changePassword(
+            @RequestBody ChangePasswordDTO dto,
+            HttpServletRequest request
+    ) {
+
+        Integer userId =
+                (Integer) request.getAttribute("userId");
+
+        ApiResponse<Void> response =
+                userService.changePassword(userId, dto);
+
         return ResponseEntity.ok(response);
     }
 

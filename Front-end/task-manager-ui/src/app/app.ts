@@ -7,8 +7,9 @@ import { SupervisorDashboardComponent } from './components/supervisor-dashboard/
 import { TaskCreateComponent } from './components/task-create/task-create';
 import { TlDashboardComponent } from './components/tl-dashboard/tl-dashboard';
 import { AuthService } from './services/auth.service';
+import { ChangePasswordComponent } from './components/change-password/change-password';
 
-type ActiveView = 'register' | 'task-create' | 'supervisor-dashboard' | 'tl-dashboard' | 'developer-dashboard';
+type ActiveView = 'register' | 'task-create' | 'supervisor-dashboard' | 'tl-dashboard' | 'developer-dashboard' | 'change-password';
 
 @Component({
   selector: 'app-root',
@@ -20,7 +21,8 @@ type ActiveView = 'register' | 'task-create' | 'supervisor-dashboard' | 'tl-dash
     SupervisorDashboardComponent,
     TaskCreateComponent,
     TlDashboardComponent,
-    DeveloperDashboardComponent
+    DeveloperDashboardComponent,
+    ChangePasswordComponent
   ],
   templateUrl: './app.html',
   styleUrl: './app.css'
@@ -57,13 +59,13 @@ export class App {
     if (!this.currentUser) return false;
 
     if (this.currentUser.role === 'SUPERVISOR') {
-      return view === 'register' || view === 'task-create' || view === 'supervisor-dashboard';
+      return view === 'register' || view === 'task-create' || view === 'supervisor-dashboard' || view === 'change-password';
     }
     if (this.currentUser.role === 'TL') {
-      return view === 'tl-dashboard';
+      return view === 'tl-dashboard' || view === 'change-password';
     }
     if (this.currentUser.role === 'DEVELOPER') {
-      return view === 'developer-dashboard';
+      return view === 'developer-dashboard' || view === 'change-password';
     }
     return false;
   }

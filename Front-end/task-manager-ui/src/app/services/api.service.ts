@@ -9,12 +9,11 @@ interface ApiResponse<T> {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ApiService {
-
-  private baseUrl = 'https://task-management-en0u.onrender.com';
-  // private baseUrl = 'http://localhost:8080';
+  //private baseUrl = 'https://task-management-en0u.onrender.com';
+  private baseUrl = 'http://localhost:8080';
   private requestTimeoutMs = 15000;
   private usersByRoleCache = new Map<string, Observable<any[]>>();
 
@@ -27,23 +26,19 @@ export class ApiService {
   }
 
   createUser(user: any) {
-    return this.http
-      .post(`${this.baseUrl}/users`, user)
-      .pipe(
-        timeout(this.requestTimeoutMs),
-        tap(() => this.usersByRoleCache.clear())
-      );
+    return this.http.post(`${this.baseUrl}/users`, user).pipe(
+      timeout(this.requestTimeoutMs),
+      tap(() => this.usersByRoleCache.clear()),
+    );
   }
 
   getUsersByRole(role: string) {
     if (!this.usersByRoleCache.has(role)) {
-      const request$ = this.http
-        .get<ApiResponse<any[]>>(`${this.baseUrl}/users/role/${role}`)
-        .pipe(
-          timeout(this.requestTimeoutMs),
-          map((res) => res.data || []),
-          shareReplay(1)
-        );
+      const request$ = this.http.get<ApiResponse<any[]>>(`${this.baseUrl}/users/role/${role}`).pipe(
+        timeout(this.requestTimeoutMs),
+        map((res) => res.data || []),
+        shareReplay(1),
+      );
 
       this.usersByRoleCache.set(role, request$);
     }
@@ -52,18 +47,14 @@ export class ApiService {
   }
 
   createTask(task: any) {
-    return this.http
-      .post(`${this.baseUrl}/tasks`, task)
-      .pipe(timeout(this.requestTimeoutMs));
+    return this.http.post(`${this.baseUrl}/tasks`, task).pipe(timeout(this.requestTimeoutMs));
   }
 
   getTasksForTL(tlId: number) {
-    return this.http
-      .get<ApiResponse<any[]>>(`${this.baseUrl}/tasks/tl/${tlId}`)
-      .pipe(
-        timeout(this.requestTimeoutMs),
-        map((res) => res.data || [])
-      );
+    return this.http.get<ApiResponse<any[]>>(`${this.baseUrl}/tasks/tl/${tlId}`).pipe(
+      timeout(this.requestTimeoutMs),
+      map((res) => res.data || []),
+    );
   }
 
   getTasksForSupervisor(supervisorId: number) {
@@ -71,28 +62,30 @@ export class ApiService {
       .get<ApiResponse<any[]>>(`${this.baseUrl}/tasks/supervisor/${supervisorId}`)
       .pipe(
         timeout(this.requestTimeoutMs),
-        map((res) => res.data || [])
+        map((res) => res.data || []),
       );
   }
 
   createSubTask(subTask: any) {
-    return this.http
-      .post(`${this.baseUrl}/subtasks`, subTask)
-      .pipe(timeout(this.requestTimeoutMs));
+    return this.http.post(`${this.baseUrl}/subtasks`, subTask).pipe(timeout(this.requestTimeoutMs));
   }
 
   getSubTasksForDeveloper(devId: number) {
-    return this.http
-      .get<ApiResponse<any[]>>(`${this.baseUrl}/subtasks/dev/${devId}`)
-      .pipe(
-        timeout(this.requestTimeoutMs),
-        map((res) => res.data || [])
-      );
+    return this.http.get<ApiResponse<any[]>>(`${this.baseUrl}/subtasks/dev/${devId}`).pipe(
+      timeout(this.requestTimeoutMs),
+      map((res) => res.data || []),
+    );
   }
 
   updateSubTaskStatus(subTaskId: number, status: string) {
     return this.http
       .put(`${this.baseUrl}/subtasks/${subTaskId}/status?status=${encodeURIComponent(status)}`, {})
+      .pipe(timeout(this.requestTimeoutMs));
+  }
+
+  changePassword(data: any) {
+    return this.http
+      .post<ApiResponse<any>>(`${this.baseUrl}/users/change-password`, data)
       .pipe(timeout(this.requestTimeoutMs));
   }
 }
