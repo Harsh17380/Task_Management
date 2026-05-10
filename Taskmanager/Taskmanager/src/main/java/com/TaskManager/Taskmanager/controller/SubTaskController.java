@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin(origins = "*")@RestController
+@RestController
 @RequestMapping("/subtasks")
 public class SubTaskController {
 

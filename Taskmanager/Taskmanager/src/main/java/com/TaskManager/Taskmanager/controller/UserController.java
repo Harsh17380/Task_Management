@@ -2,6 +2,7 @@ package com.TaskManager.Taskmanager.controller;
 
 import com.TaskManager.Taskmanager.dto.ApiResponse;
 import com.TaskManager.Taskmanager.dto.LoginRequestDTO;
+import com.TaskManager.Taskmanager.dto.LoginResponseDTO;
 import com.TaskManager.Taskmanager.dto.UserRequestDTO;
 import com.TaskManager.Taskmanager.dto.UserResponseDTO;
 import com.TaskManager.Taskmanager.model.User;
@@ -12,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -20,7 +20,7 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    // Register user
+    // Register user — requires SUPERVISOR role (enforced by SecurityConfig)
     @PostMapping
     public ResponseEntity<ApiResponse<Void>> createUser(@RequestBody UserRequestDTO dto) {
         ApiResponse<Void> response = userService.createUser(dto);
@@ -28,8 +28,8 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<UserResponseDTO>> login(@RequestBody LoginRequestDTO dto) {
-        ApiResponse<UserResponseDTO> response = userService.login(dto);
+    public ResponseEntity<ApiResponse<LoginResponseDTO>> login(@RequestBody LoginRequestDTO dto) {
+        ApiResponse<LoginResponseDTO> response = userService.login(dto);
         return ResponseEntity.ok(response);
     }
 
