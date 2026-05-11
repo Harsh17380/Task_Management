@@ -53,7 +53,7 @@ public class SecurityConfig {
                         ).permitAll()
 
                         // Protected endpoints
-                        .requestMatchers("/users").hasRole("SUPERVISOR")
+                        //.requestMatchers("/users").permitAll()
                         .requestMatchers("/users/role/**").authenticated()
 
                         .requestMatchers("/tasks").hasRole("SUPERVISOR")
@@ -65,7 +65,10 @@ public class SecurityConfig {
                         .requestMatchers("/subtasks/*/status").hasRole("DEVELOPER")
 
                         .requestMatchers("/users/change-password").authenticated()
-
+                        .requestMatchers(HttpMethod.DELETE, "/users/**")
+                        .hasAnyRole("SUPERVISOR", "TL")
+                        .requestMatchers(HttpMethod.GET, "/users")
+                        .hasAnyRole("SUPERVISOR", "TL")
                         .anyRequest().authenticated()
                 )
 

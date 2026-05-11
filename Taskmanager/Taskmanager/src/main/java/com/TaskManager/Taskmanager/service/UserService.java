@@ -108,4 +108,64 @@ public class UserService {
 
         return new ApiResponse<>(true, "Password changed successfully");
     }
+
+    public ApiResponse<Void> deleteUser(
+            int loggedInUserId,
+            String loggedInRole,
+            int targetUserId
+    ) {
+
+        // prevent self delete
+        if (loggedInUserId == targetUserId) {
+            return new ApiResponse<>(false,
+                    "You cannot delete your own account");
+        }
+
+        Optional<User> targetUserOptional =
+                userRepository.findById(targetUserId);
+
+        if (targetUserOptional.isEmpty()) {
+            return new ApiResponse<>(false,
+                    "Target user not found");
+        }
+
+        User targetUser = targetUserOptional.get();
+
+        // SUPERVISOR rules
+        if (loggedInRole.equals("SUPERVISOR")) {
+
+            if (targetUser.getRole().equals("SUPERVISOR")) {
+
+                return new ApiResponse<>(false,
+                        "Supervisor cannot delete another supervisor");
+            }
+        }
+
+        // TL rules
+        else if (loggedInRole.equals("TL")) {
+
+            if (!targetUser.getRole().equals("DEVELOPER")) {
+
+                return new ApiResponse<>(false,
+                        "TL can delete only developers");
+            }
+        }
+
+        // DEVELOPER rules
+        else {
+
+            return new ApiResponse<>(false,
+                    "Unauthorized access");
+        }
+
+        userRepository.deleteUserById(targetUserId);
+
+        return new ApiResponse<>(true,
+                "User deleted successfully");
+    }
+
+    public List<User> getAllUsers() {
+
+        return userRepository.findAll();
+    }
 }

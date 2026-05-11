@@ -51,4 +51,38 @@ public class UserController {
         List<User> users = userService.getUsersByRole(role);
         return ResponseEntity.ok(new ApiResponse<>(true, "Users fetched successfully", users));
     }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteUser(
+            @PathVariable int id,
+            HttpServletRequest request
+    ) {
+
+        Integer loggedInUserId =
+                (Integer) request.getAttribute("userId");
+
+        String loggedInRole =
+                (String) request.getAttribute("role");
+
+        ApiResponse<Void> response =
+                userService.deleteUser(
+                        loggedInUserId,
+                        loggedInRole,
+                        id
+                );
+
+        return ResponseEntity.ok(response);
+    }
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<User>>> getAllUsers() {
+
+        List<User> users = userService.getAllUsers();
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(
+                        true,
+                        "Users fetched successfully",
+                        users
+                )
+        );
+    }
 }

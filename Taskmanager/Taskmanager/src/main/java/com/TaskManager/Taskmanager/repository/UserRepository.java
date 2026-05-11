@@ -99,4 +99,28 @@ public class UserRepository {
 
         return users.stream().findFirst();
     }
+    public int deleteUserById(int id) {
+
+        String sql = "DELETE FROM users WHERE id = ?";
+
+        return jdbcTemplate.update(sql, id);
+    }
+
+    public List<User> findAll() {
+        String sql = "SELECT * FROM users";
+
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+
+            User user = new User();
+
+            user.setId(rs.getInt("id"));
+            user.setName(rs.getString("name"));
+            user.setEmail(rs.getString("email"));
+            user.setPassword(rs.getString("password"));
+            user.setRole(rs.getString("role"));
+
+            return user;
+
+        });
+    }
 }
