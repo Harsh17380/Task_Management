@@ -8,8 +8,16 @@ import { TaskCreateComponent } from './components/task-create/task-create';
 import { TlDashboardComponent } from './components/tl-dashboard/tl-dashboard';
 import { AuthService } from './services/auth.service';
 import { ChangePasswordComponent } from './components/change-password/change-password';
+import { UserManagementComponent } from './components/user-management/user-management';
 
-type ActiveView = 'register' | 'task-create' | 'supervisor-dashboard' | 'tl-dashboard' | 'developer-dashboard' | 'change-password';
+type ActiveView =
+  | 'register'
+  | 'task-create'
+  | 'supervisor-dashboard'
+  | 'tl-dashboard'
+  | 'developer-dashboard'
+  | 'change-password'
+  | 'user-management';
 
 @Component({
   selector: 'app-root',
@@ -22,7 +30,8 @@ type ActiveView = 'register' | 'task-create' | 'supervisor-dashboard' | 'tl-dash
     TaskCreateComponent,
     TlDashboardComponent,
     DeveloperDashboardComponent,
-    ChangePasswordComponent
+    ChangePasswordComponent,
+    UserManagementComponent,
   ],
   templateUrl: './app.html',
   styleUrl: './app.css'
@@ -32,7 +41,7 @@ export class App {
   activeView: ActiveView = 'tl-dashboard';
 
   constructor(private authService: AuthService) {
-    // ✅ Restore session on app load — validates token expiry too
+    // Restore session on app load — validates token expiry too
     if (authService.isLoggedIn()) {
       this.currentUser = authService.getUser();
       this.activeView = this.getDefaultView(this.currentUser?.role);
@@ -45,7 +54,6 @@ export class App {
   }
 
   logout() {
-    // ✅ Clears both token and user profile
     this.authService.logout();
     this.currentUser = null;
     this.activeView = 'tl-dashboard';
@@ -55,19 +63,37 @@ export class App {
     this.activeView = view;
   }
 
-  canAccess(view: ActiveView) {
+  canAccess(view: ActiveView): boolean {
     if (!this.currentUser) return false;
 
-    if (this.currentUser.role === 'SUPERVISOR') {
-      return view === 'register' || view === 'task-create' || view === 'supervisor-dashboard' || view === 'change-password';
+    const role = this.currentUser.role;
+
+    if (view === 'user-management') {
+      return this.isAdminUser();
     }
-    if (this.currentUser.role === 'TL') {
-      return view === 'tl-dashboard' || view === 'change-password';
+
+    if (role === 'SUPERVISOR') {
+      return [
+        'register',
+        'task-create',
+        'supervisor-dashboard',
+        'change-password',
+      ].includes(view);
     }
-    if (this.currentUser.role === 'DEVELOPER') {
-      return view === 'developer-dashboard' || view === 'change-password';
+
+    if (role === 'TL') {
+      return ['tl-dashboard', 'change-password'].includes(view);
     }
+
+    if (role === 'DEVELOPER') {
+      return ['developer-dashboard', 'change-password'].includes(view);
+    }
+
     return false;
+  }
+
+  private isAdminUser(): boolean {
+    return this.currentUser?.email?.toLowerCase() === 'admin@corequeue.com';
   }
 
   private getDefaultView(role?: string): ActiveView {

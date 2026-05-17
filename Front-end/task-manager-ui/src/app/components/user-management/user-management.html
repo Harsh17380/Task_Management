@@ -1,0 +1,128 @@
+<section class="user-management">
+
+  <header class="section-header">
+    <div>
+      <p class="eyebrow">Admin</p>
+      <h2>User Management</h2>
+    </div>
+    <button type="button" (click)="loadUsers()" [disabled]="isLoading">
+      {{ isLoading ? 'Refreshing...' : 'Refresh' }}
+    </button>
+  </header>
+
+  <!-- Summary Cards -->
+  <section class="summary-grid">
+    <div class="summary-card">
+      <span>Total Users</span>
+      <strong>{{ users.length }}</strong>
+    </div>
+    <div class="summary-card">
+      <span>Supervisors</span>
+      <strong>{{ countByRole('SUPERVISOR') }}</strong>
+    </div>
+    <div class="summary-card">
+      <span>Team Leads</span>
+      <strong>{{ countByRole('TL') }}</strong>
+    </div>
+    <div class="summary-card">
+      <span>Developers</span>
+      <strong>{{ countByRole('DEVELOPER') }}</strong>
+    </div>
+  </section>
+
+  <!-- User Table -->
+  <section class="panel">
+    <div class="panel-header">
+      <h3>All Users</h3>
+      <span>{{ users.length }} users</span>
+    </div>
+
+    <p *ngIf="isLoading" class="empty-state">Loading users...</p>
+
+    <p *ngIf="!isLoading && users.length === 0" class="empty-state">
+      No users found.
+    </p>
+
+    <div class="table-wrapper" *ngIf="!isLoading && users.length > 0">
+      <table class="user-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let user of users"
+            [class.self-row]="user.id === currentUser?.id"
+          >
+            <td class="col-id">{{ user.id }}</td>
+            <td class="col-name">
+              {{ user.name }}
+              <span class="you-label" *ngIf="user.id === currentUser?.id">(You)</span>
+            </td>
+            <td class="col-email">{{ user.email }}</td>
+            <td class="col-role">
+              <span class="role-badge" [ngClass]="getRoleBadgeClass(user.role)">
+                {{ user.role }}
+              </span>
+            </td>
+            <td class="col-status">
+              <span class="status-badge" [class.inactive]="!user.status">
+                {{ user.status ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td class="col-action">
+              <button
+                *ngIf="canDelete(user)"
+                type="button"
+                class="btn-delete"
+                (click)="deleteUser(user)"
+                [disabled]="isDeleting(user.id)"
+              >
+                {{ isDeleting(user.id) ? 'Deleting...' : 'Delete' }}
+              </button>
+              <span *ngIf="!canDelete(user)" class="no-action">—</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="message" [ngClass]="messageType" *ngIf="message">{{ message }}</p>
+  </section>
+
+  <section class="modal-backdrop" *ngIf="userPendingDelete">
+    <div class="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="delete-user-title">
+      <p class="eyebrow">Confirm action</p>
+      <h3 id="delete-user-title">Deactivate user?</h3>
+      <p class="dialog-copy">
+        {{ userPendingDelete.name }} ({{ userPendingDelete.role }}) will no longer be able to log in or receive new assignments.
+      </p>
+
+      <div class="dialog-actions">
+        <button
+          type="button"
+          class="btn-secondary"
+          (click)="cancelDelete()"
+          [disabled]="isDeleting(userPendingDelete.id)"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn-danger"
+          (click)="confirmDelete()"
+          [disabled]="isDeleting(userPendingDelete.id)"
+        >
+          {{ isDeleting(userPendingDelete.id) ? 'Deactivating...' : 'Deactivate' }}
+        </button>
+      </div>
+    </div>
+  </section>
+
+</section>

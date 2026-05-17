@@ -46,6 +46,24 @@ export class ApiService {
     return this.usersByRoleCache.get(role)!;
   }
 
+  // ── NEW: Get all users (used by User Management) ──────────────
+  getAllUsers() {
+    return this.http.get<ApiResponse<any[]>>(`${this.baseUrl}/users`).pipe(
+      timeout(this.requestTimeoutMs),
+      map((res) => res.data || []),
+    );
+  }
+
+  // ── NEW: Delete a user by ID ──────────────────────────────────
+  deleteUser(userId: number) {
+    return this.http
+      .delete<ApiResponse<void>>(`${this.baseUrl}/users/${userId}`)
+      .pipe(
+        timeout(this.requestTimeoutMs),
+        tap(() => this.usersByRoleCache.clear()),
+      );
+  }
+
   createTask(task: any) {
     return this.http.post(`${this.baseUrl}/tasks`, task).pipe(timeout(this.requestTimeoutMs));
   }

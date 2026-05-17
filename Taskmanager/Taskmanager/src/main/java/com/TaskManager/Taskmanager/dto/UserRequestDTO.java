@@ -6,9 +6,15 @@ public class UserRequestDTO {
     private String email;
     private String password;
     private String role;
+    private boolean status;
 
-    // getters & setters
+    public boolean getStatus() {
+        return status;
+    }
 
+    public void setStatus(boolean status) {
+        this.status = status;
+    }
 
     public String getName() {
         return name;

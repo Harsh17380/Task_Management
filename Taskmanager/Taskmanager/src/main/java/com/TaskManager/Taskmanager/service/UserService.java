@@ -14,6 +14,8 @@ import java.util.Optional;
 @Service
 public class UserService {
 
+    private static final String ADMIN_EMAIL = "admin@corequeue.com";
+
     @Autowired
     private UserRepository userRepository;
 
@@ -34,6 +36,7 @@ public class UserService {
         user.setEmail(dto.getEmail());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setRole(dto.getRole());
+        user.setStatus(true);
 
         userRepository.save(user);
 
@@ -65,6 +68,10 @@ public class UserService {
 
         if (!passwordEncoder.matches(dto.getPassword(), foundUser.getPassword())) {
             return new ApiResponse<>(false, "Invalid email or password");
+        }
+
+        if (!foundUser.getStatus()) {
+            return new ApiResponse<>(false, "User is deactivated");
         }
 
         String token = jwtUtil.generateToken(
@@ -112,8 +119,14 @@ public class UserService {
     public ApiResponse<Void> deleteUser(
             int loggedInUserId,
             String loggedInRole,
+            String loggedInEmail,
             int targetUserId
     ) {
+
+        if (!isAdminUser(loggedInEmail)) {
+            return new ApiResponse<>(false,
+                    "Only admin can manage users");
+        }
 
         // prevent self delete
         if (loggedInUserId == targetUserId) {
@@ -132,40 +145,36 @@ public class UserService {
         User targetUser = targetUserOptional.get();
 
         // SUPERVISOR rules
-        if (loggedInRole.equals("SUPERVISOR")) {
-
-            if (targetUser.getRole().equals("SUPERVISOR")) {
-
-                return new ApiResponse<>(false,
-                        "Supervisor cannot delete another supervisor");
-            }
-        }
-
-        // TL rules
-        else if (loggedInRole.equals("TL")) {
-
-            if (!targetUser.getRole().equals("DEVELOPER")) {
-
-                return new ApiResponse<>(false,
-                        "TL can delete only developers");
-            }
-        }
-
-        // DEVELOPER rules
-        else {
-
+        if (!targetUser.getStatus()) {
             return new ApiResponse<>(false,
-                    "Unauthorized access");
+                    "User already deactivated");
         }
 
-        userRepository.deleteUserById(targetUserId);
+        int updatedRows = userRepository.deleteUserById(targetUserId);
+
+        if (updatedRows == 0) {
+            return new ApiResponse<>(false,
+                    "User already deactivated");
+        }
 
         return new ApiResponse<>(true,
-                "User deleted successfully");
+                "User deactivated successfully");
     }
 
-    public List<User> getAllUsers() {
+    public ApiResponse<List<User>> getAllUsers(String loggedInEmail) {
 
-        return userRepository.findAll();
+        if (!isAdminUser(loggedInEmail)) {
+            return new ApiResponse<>(false,
+                    "Only admin can manage users",
+                    List.of());
+        }
+
+        return new ApiResponse<>(true,
+                "Users fetched successfully",
+                userRepository.findAll());
+    }
+
+    private boolean isAdminUser(String email) {
+        return email != null && ADMIN_EMAIL.equalsIgnoreCase(email.trim());
     }
 }

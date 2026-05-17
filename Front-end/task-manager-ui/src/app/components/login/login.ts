@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Output } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { ApiService } from '../../services/api.service';
@@ -25,20 +25,24 @@ export class LoginComponent {
 
   constructor(
     private api: ApiService,
-    private authService: AuthService
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef
   ) {}
   login() {
     if (!this.credentials.email.trim() || !this.credentials.password) {
       this.message = 'Enter email and password.';
+      this.cdr.detectChanges();
       return;
     }
 
     this.isSubmitting = true;
     this.message = '';
+    this.cdr.detectChanges();
 
     this.api.login(this.credentials)
       .pipe(finalize(() => {
         this.isSubmitting = false;
+        this.cdr.detectChanges();
       }))
       .subscribe({
         next: (res: any) => {
@@ -59,10 +63,12 @@ export class LoginComponent {
             const { token, ...userWithoutToken } = userData;
             this.loggedIn.emit(userWithoutToken);
          }
+          this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Login error:', err);
           this.message = 'Login failed. Please check backend server.';
+          this.cdr.detectChanges();
         }
       });
   }

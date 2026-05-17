@@ -53,7 +53,7 @@ public class SecurityConfig {
                         ).permitAll()
 
                         // Protected endpoints
-                        //.requestMatchers("/users").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/users").hasRole("SUPERVISOR")
                         .requestMatchers("/users/role/**").authenticated()
 
                         .requestMatchers("/tasks").hasRole("SUPERVISOR")

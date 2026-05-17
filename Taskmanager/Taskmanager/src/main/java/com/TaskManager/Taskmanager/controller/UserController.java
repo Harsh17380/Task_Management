@@ -47,9 +47,12 @@ public class UserController {
 
     // Get users by role
     @GetMapping("/role/{role}")
-    public ResponseEntity<ApiResponse<List<User>>> getUsersByRole(@PathVariable String role) {
+    public ResponseEntity<ApiResponse<List<UserResponseDTO>>> getUsersByRole(@PathVariable String role) {
         List<User> users = userService.getUsersByRole(role);
-        return ResponseEntity.ok(new ApiResponse<>(true, "Users fetched successfully", users));
+        List<UserResponseDTO> responseData = users.stream()
+                .map(UserResponseDTO::new)
+                .toList();
+        return ResponseEntity.ok(new ApiResponse<>(true, "Users fetched successfully", responseData));
     }
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteUser(
@@ -63,25 +66,47 @@ public class UserController {
         String loggedInRole =
                 (String) request.getAttribute("role");
 
+        String loggedInEmail =
+                (String) request.getAttribute("email");
+
         ApiResponse<Void> response =
                 userService.deleteUser(
                         loggedInUserId,
                         loggedInRole,
+                        loggedInEmail,
                         id
                 );
 
         return ResponseEntity.ok(response);
     }
     @GetMapping
-    public ResponseEntity<ApiResponse<List<User>>> getAllUsers() {
+    public ResponseEntity<ApiResponse<List<UserResponseDTO>>> getAllUsers(HttpServletRequest request) {
 
-        List<User> users = userService.getAllUsers();
+        String loggedInEmail =
+                (String) request.getAttribute("email");
+
+        ApiResponse<List<User>> usersResponse = userService.getAllUsers(loggedInEmail);
+
+        if (!usersResponse.isSuccess()) {
+            return ResponseEntity.ok(
+                    new ApiResponse<>(
+                            false,
+                            usersResponse.getMessage(),
+                            List.of()
+                    )
+            );
+        }
+
+        List<User> users = usersResponse.getData();
+        List<UserResponseDTO> responseData = users.stream()
+                .map(UserResponseDTO::new)
+                .toList();
 
         return ResponseEntity.ok(
                 new ApiResponse<>(
                         true,
                         "Users fetched successfully",
-                        users
+                        responseData
                 )
         );
     }

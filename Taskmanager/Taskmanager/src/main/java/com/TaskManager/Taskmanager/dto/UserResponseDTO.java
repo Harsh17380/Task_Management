@@ -8,12 +8,22 @@ public class UserResponseDTO {
     private String name;
     private String email;
     private String role;
+    private boolean status;
+
+    public boolean getStatus() {
+        return status;
+    }
+
+    public void setStatus(boolean status) {
+        this.status = status;
+    }
 
     public UserResponseDTO(User user) {
         this.id = user.getId();
         this.name = user.getName();
         this.email = user.getEmail();
         this.role = user.getRole();
+        this.status = user.getStatus();
     }
 
     public int getId() {

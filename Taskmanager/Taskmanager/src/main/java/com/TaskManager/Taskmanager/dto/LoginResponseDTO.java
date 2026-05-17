@@ -9,6 +9,15 @@ public class LoginResponseDTO {
     private String email;
     private String role;
     private String token;  // JWT token
+    private boolean status;
+
+    public boolean getStatus() {
+        return status;
+    }
+
+    public void setStatus(boolean status) {
+        this.status = status;
+    }
 
     public LoginResponseDTO(User user, String token) {
         this.id = user.getId();
@@ -16,6 +25,7 @@ public class LoginResponseDTO {
         this.email = user.getEmail();
         this.role = user.getRole();
         this.token = token;
+        this.status = user.getStatus();
     }
 
     public int getId() { return id; }

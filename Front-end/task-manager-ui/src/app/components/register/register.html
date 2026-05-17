@@ -32,5 +32,6 @@
     </button>
   </form>
 
-  <p class="message" *ngIf="message">{{ message }}</p>
+  <p class="message" [ngClass]="messageType" *ngIf="message">{{ message }}</p>
+
 </section>
