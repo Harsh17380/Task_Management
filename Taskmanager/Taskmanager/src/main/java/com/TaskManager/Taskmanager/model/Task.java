@@ -1,5 +1,7 @@
 package com.TaskManager.Taskmanager.model;
 
+import java.time.LocalDate;
+
 public class Task {
 
     private int id;
@@ -8,6 +10,8 @@ public class Task {
     private int assignedTo;   // TL ID
     private int createdBy;    // Supervisor ID
     private String status;
+    private LocalDate dueDate;
+    private String priority;
 
     // getters & setters
 
@@ -57,5 +61,21 @@ public class Task {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public LocalDate getDueDate() {
+        return dueDate;
+    }
+
+    public void setDueDate(LocalDate dueDate) {
+        this.dueDate = dueDate;
+    }
+
+    public String getPriority() {
+        return priority;
+    }
+
+    public void setPriority(String priority) {
+        this.priority = priority;
     }
 }

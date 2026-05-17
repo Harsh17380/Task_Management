@@ -12,6 +12,23 @@
       <input name="description" [(ngModel)]="task.description" placeholder="Description">
     </label>
 
+    <div class="form-row">
+      <label>
+        Due Date
+        <input name="dueDate" type="date" [(ngModel)]="task.dueDate">
+      </label>
+
+      <label>
+        Priority
+        <select name="priority" [(ngModel)]="task.priority">
+          <option value="LOW">Low</option>
+          <option value="MEDIUM">Medium</option>
+          <option value="HIGH">High</option>
+          <option value="URGENT">Urgent</option>
+        </select>
+      </label>
+    </div>
+
     <label>
       Team Lead
       <select name="assignedTo" [(ngModel)]="task.assignedTo">

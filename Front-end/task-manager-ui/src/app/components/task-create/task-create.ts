@@ -19,7 +19,9 @@ export class TaskCreateComponent implements OnInit {
     title: '',
     description: '',
     assignedTo: '',
-    createdBy: 0
+    createdBy: 0,
+    dueDate: '',
+    priority: 'MEDIUM'
   };
 
   tls: any[] = [];
@@ -70,7 +72,9 @@ export class TaskCreateComponent implements OnInit {
             title: '',
             description: '',
             assignedTo: '',
-              createdBy: this.currentUser?.id || 0
+              createdBy: this.currentUser?.id || 0,
+              dueDate: '',
+              priority: 'MEDIUM'
             };
           }
           this.cdr.detectChanges();

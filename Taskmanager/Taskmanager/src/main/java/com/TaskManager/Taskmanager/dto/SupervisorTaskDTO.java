@@ -1,5 +1,7 @@
 package com.TaskManager.Taskmanager.dto;
 
+import java.time.LocalDate;
+
 public class SupervisorTaskDTO {
 
     private int id;
@@ -9,6 +11,8 @@ public class SupervisorTaskDTO {
     private String assignedToName;
     private int createdBy;
     private String status;
+    private LocalDate dueDate;
+    private String priority;
 
     public int getId() {
         return id;
@@ -64,5 +68,21 @@ public class SupervisorTaskDTO {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public LocalDate getDueDate() {
+        return dueDate;
+    }
+
+    public void setDueDate(LocalDate dueDate) {
+        this.dueDate = dueDate;
+    }
+
+    public String getPriority() {
+        return priority;
+    }
+
+    public void setPriority(String priority) {
+        this.priority = priority;
     }
 }

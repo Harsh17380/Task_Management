@@ -20,6 +20,9 @@ public class TaskService {
     @Autowired
     private UserRepository userRepository;
 
+    private static final List<String> ALLOWED_PRIORITIES =
+            List.of("LOW", "MEDIUM", "HIGH", "URGENT");
+
     public ApiResponse<Void> createTask(TaskRequestDTO dto) {
 
         if (dto.getTitle() == null || dto.getTitle().trim().isEmpty()) {
@@ -34,12 +37,19 @@ public class TaskService {
             return new ApiResponse<>(false, "Invalid TL ID");
         }
 
+        String priority = normalizePriority(dto.getPriority());
+        if (priority == null) {
+            return new ApiResponse<>(false, "Invalid priority");
+        }
+
         Task task = new Task();
         task.setTitle(dto.getTitle().trim());
         task.setDescription(dto.getDescription());
         task.setAssignedTo(dto.getAssignedTo());
         task.setCreatedBy(dto.getCreatedBy());
         task.setStatus("PENDING");
+        task.setDueDate(dto.getDueDate());
+        task.setPriority(priority);
 
         taskRepository.createTask(task);
         return new ApiResponse<>(true, "Task created and assigned to TL");
@@ -51,5 +61,12 @@ public class TaskService {
 
     public List<SupervisorTaskDTO> getTasksForSupervisor(int supervisorId) {
         return taskRepository.findTasksBySupervisor(supervisorId);
+    }
+
+    private String normalizePriority(String priority) {
+        String normalized = priority == null || priority.trim().isEmpty()
+                ? "MEDIUM"
+                : priority.trim().toUpperCase();
+        return ALLOWED_PRIORITIES.contains(normalized) ? normalized : null;
     }
 }

@@ -20,6 +20,8 @@ export class DeveloperDashboardComponent implements OnInit {
   subTasks: any[] = [];
   message = '';
   updatingSubTaskIds = new Set<number>();
+  searchTerm = '';
+  statusFilter = '';
 
   constructor(
     private api: ApiService,
@@ -114,5 +116,19 @@ export class DeveloperDashboardComponent implements OnInit {
 
   countByStatus(status: string) {
     return this.subTasks.filter((subTask) => subTask.status === status).length;
+  }
+
+  get filteredSubTasks() {
+    const search = this.searchTerm.trim().toLowerCase();
+
+    return this.subTasks.filter((subTask) => {
+      const matchesSearch =
+        !search ||
+        subTask.title?.toLowerCase().includes(search) ||
+        String(subTask.taskId).includes(search);
+      const matchesStatus = !this.statusFilter || subTask.status === this.statusFilter;
+
+      return matchesSearch && matchesStatus;
+    });
   }
 }

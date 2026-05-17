@@ -22,6 +22,9 @@ export class TlDashboardComponent implements OnInit {
   selectedTask: any = null;
   isSubmitting = false;
   message = '';
+  searchTerm = '';
+  statusFilter = '';
+  priorityFilter = '';
 
   subTask = {
     taskId: 0,
@@ -122,6 +125,25 @@ export class TlDashboardComponent implements OnInit {
 
   countByStatus(status: string) {
     return this.tasks.filter((task) => task.status === status).length;
+  }
+
+  get filteredTasks() {
+    const search = this.searchTerm.trim().toLowerCase();
+
+    return this.tasks.filter((task) => {
+      const matchesSearch =
+        !search ||
+        task.title?.toLowerCase().includes(search) ||
+        task.description?.toLowerCase().includes(search);
+      const matchesStatus = !this.statusFilter || task.status === this.statusFilter;
+      const matchesPriority = !this.priorityFilter || task.priority === this.priorityFilter;
+
+      return matchesSearch && matchesStatus && matchesPriority;
+    });
+  }
+
+  getPriorityClass(priority: string) {
+    return `priority-${(priority || 'MEDIUM').toLowerCase()}`;
   }
 
   createSubTask() {

@@ -46,15 +46,34 @@
 
     <div class="panel-header">
       <h3>Assigned Subtasks</h3>
-      <span>{{ subTasks.length }} subtasks</span>
+      <span>{{ filteredSubTasks.length }} of {{ subTasks.length }} subtasks</span>
+    </div>
+
+    <div class="filters" *ngIf="subTasks.length > 0">
+      <input
+        type="search"
+        name="subTaskSearch"
+        [(ngModel)]="searchTerm"
+        placeholder="Search subtasks or task ID"
+      >
+      <select name="subTaskStatusFilter" [(ngModel)]="statusFilter">
+        <option value="">All statuses</option>
+        <option value="PENDING">Pending</option>
+        <option value="IN_PROGRESS">In Progress</option>
+        <option value="DONE">Done</option>
+      </select>
     </div>
 
     <p *ngIf="subTasks.length === 0" class="empty-state">
       {{ selectedDeveloperId ? 'No subtasks assigned to this developer yet.' : 'Select a developer to view subtasks.' }}
     </p>
 
-    <ul class="subtask-list" *ngIf="subTasks.length > 0">
-      <li *ngFor="let subTask of subTasks" class="subtask-item">
+    <p *ngIf="subTasks.length > 0 && filteredSubTasks.length === 0" class="empty-state">
+      No subtasks match the selected filters.
+    </p>
+
+    <ul class="subtask-list" *ngIf="filteredSubTasks.length > 0">
+      <li *ngFor="let subTask of filteredSubTasks" class="subtask-item">
         <div>
           <span class="subtask-title">{{ subTask.title }}</span>
           <span class="subtask-meta">Task ID: {{ subTask.taskId }}</span>
