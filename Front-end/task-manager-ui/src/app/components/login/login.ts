@@ -22,6 +22,7 @@ export class LoginComponent {
   };
   isSubmitting = false;
   message = '';
+  showPassword = false;
 
   constructor(
     private api: ApiService,
@@ -71,5 +72,9 @@ export class LoginComponent {
           this.cdr.detectChanges();
         }
       });
+  }
+
+  togglePasswordVisibility() {
+    this.showPassword = !this.showPassword;
   }
 }

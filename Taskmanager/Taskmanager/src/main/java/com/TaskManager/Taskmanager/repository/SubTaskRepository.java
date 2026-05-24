@@ -63,4 +63,10 @@ public class SubTaskRepository {
         Integer taskId = jdbcTemplate.queryForObject(sql, Integer.class, subTaskId);
         return taskId != null ? taskId : 0;
     }
+
+    public boolean existsByTaskIdAndDeveloper(int taskId, int developerId) {
+        String sql = "SELECT COUNT(*) FROM sub_tasks WHERE task_id = ? AND assigned_to = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, taskId, developerId);
+        return count != null && count > 0;
+    }
 }

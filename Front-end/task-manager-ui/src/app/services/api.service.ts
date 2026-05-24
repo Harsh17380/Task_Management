@@ -84,6 +84,19 @@ export class ApiService {
       );
   }
 
+  getTaskComments(taskId: number) {
+    return this.http.get<ApiResponse<any[]>>(`${this.baseUrl}/tasks/${taskId}/comments`).pipe(
+      timeout(this.requestTimeoutMs),
+      map((res) => res.data || []),
+    );
+  }
+
+  addTaskComment(taskId: number, comment: string) {
+    return this.http
+      .post<ApiResponse<void>>(`${this.baseUrl}/tasks/${taskId}/comments`, { comment })
+      .pipe(timeout(this.requestTimeoutMs));
+  }
+
   createSubTask(subTask: any) {
     return this.http.post(`${this.baseUrl}/subtasks`, subTask).pipe(timeout(this.requestTimeoutMs));
   }

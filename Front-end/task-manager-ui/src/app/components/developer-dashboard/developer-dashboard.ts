@@ -22,6 +22,12 @@ export class DeveloperDashboardComponent implements OnInit {
   updatingSubTaskIds = new Set<number>();
   searchTerm = '';
   statusFilter = '';
+  openedTaskId: number | null = null;
+  taskComments: any[] = [];
+  newComment = '';
+  isLoadingComments = false;
+  isAddingComment = false;
+  commentMessage = '';
 
   constructor(
     private api: ApiService,
@@ -129,6 +135,65 @@ export class DeveloperDashboardComponent implements OnInit {
       const matchesStatus = !this.statusFilter || subTask.status === this.statusFilter;
 
       return matchesSearch && matchesStatus;
+    });
+  }
+
+  openComments(taskId: number) {
+    this.openedTaskId = taskId;
+    this.newComment = '';
+    this.commentMessage = '';
+    this.loadComments(taskId);
+  }
+
+  closeComments() {
+    this.openedTaskId = null;
+    this.taskComments = [];
+    this.newComment = '';
+    this.commentMessage = '';
+  }
+
+  loadComments(taskId: number) {
+    this.isLoadingComments = true;
+    this.api.getTaskComments(taskId).subscribe({
+      next: (comments: any[]) => {
+        this.taskComments = comments;
+        this.isLoadingComments = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error loading comments:', err);
+        this.taskComments = [];
+        this.commentMessage = 'Could not load comments.';
+        this.isLoadingComments = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  addComment() {
+    const text = this.newComment.trim();
+    if (!this.openedTaskId || !text || this.isAddingComment) return;
+
+    this.isAddingComment = true;
+    this.commentMessage = '';
+    this.cdr.detectChanges();
+
+    this.api.addTaskComment(this.openedTaskId, text).subscribe({
+      next: (res: any) => {
+        this.commentMessage = res.message;
+        if (res.success && this.openedTaskId) {
+          this.newComment = '';
+          this.loadComments(this.openedTaskId);
+        }
+        this.isAddingComment = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error adding comment:', err);
+        this.commentMessage = err?.error?.message || 'Could not add comment.';
+        this.isAddingComment = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 }

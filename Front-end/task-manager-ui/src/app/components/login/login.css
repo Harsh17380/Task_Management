@@ -40,10 +40,35 @@ label {
 }
 
 input {
+  width: 100%;
+  box-sizing: border-box;
   border: 1px solid #d1d5db;
   border-radius: 6px;
   padding: 11px 12px;
   font: inherit;
+}
+
+.password-field {
+  position: relative;
+  display: block;
+}
+
+.password-field input {
+  padding-right: 72px;
+}
+
+.toggle-password {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 6px;
+  padding: 7px 10px;
+  background: #eef2ff;
+  color: #1d4ed8;
+  cursor: pointer;
+  font-weight: 700;
 }
 
 button {

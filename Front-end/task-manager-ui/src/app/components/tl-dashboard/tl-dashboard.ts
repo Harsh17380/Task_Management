@@ -25,6 +25,12 @@ export class TlDashboardComponent implements OnInit {
   searchTerm = '';
   statusFilter = '';
   priorityFilter = '';
+  openedTask: any = null;
+  taskComments: any[] = [];
+  newComment = '';
+  isLoadingComments = false;
+  isAddingComment = false;
+  commentMessage = '';
 
   subTask = {
     taskId: 0,
@@ -144,6 +150,65 @@ export class TlDashboardComponent implements OnInit {
 
   getPriorityClass(priority: string) {
     return `priority-${(priority || 'MEDIUM').toLowerCase()}`;
+  }
+
+  openTask(task: any) {
+    this.openedTask = task;
+    this.newComment = '';
+    this.commentMessage = '';
+    this.loadComments(task.id);
+  }
+
+  closeTask() {
+    this.openedTask = null;
+    this.taskComments = [];
+    this.newComment = '';
+    this.commentMessage = '';
+  }
+
+  loadComments(taskId: number) {
+    this.isLoadingComments = true;
+    this.api.getTaskComments(taskId).subscribe({
+      next: (comments: any[]) => {
+        this.taskComments = comments;
+        this.isLoadingComments = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error loading comments:', err);
+        this.taskComments = [];
+        this.commentMessage = 'Could not load comments.';
+        this.isLoadingComments = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  addComment() {
+    const text = this.newComment.trim();
+    if (!this.openedTask || !text || this.isAddingComment) return;
+
+    this.isAddingComment = true;
+    this.commentMessage = '';
+    this.cdr.detectChanges();
+
+    this.api.addTaskComment(this.openedTask.id, text).subscribe({
+      next: (res: any) => {
+        this.commentMessage = res.message;
+        if (res.success) {
+          this.newComment = '';
+          this.loadComments(this.openedTask.id);
+        }
+        this.isAddingComment = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error adding comment:', err);
+        this.commentMessage = err?.error?.message || 'Could not add comment.';
+        this.isAddingComment = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   createSubTask() {

@@ -79,23 +79,30 @@
         No tasks match the selected filters.
       </p>
 
-      <ul class="task-list" *ngIf="filteredTasks.length > 0">
+      <ul class="task-list tile-list" *ngIf="filteredTasks.length > 0">
         <li
           *ngFor="let task of filteredTasks"
-          class="task-item"
+          class="task-tile"
           [class.selected]="selectedTask?.id === task.id"
         >
-          <button type="button" class="task-button" (click)="selectTask(task)">
-            <span class="task-title">{{ task.title }}</span>
-            <span class="task-description">{{ task.description }}</span>
-            <span class="task-meta">
-              Due: {{ task.dueDate || 'Not set' }}
-              <span class="priority" [ngClass]="getPriorityClass(task.priority)">
-                {{ task.priority || 'MEDIUM' }}
-              </span>
+          <div class="tile-header">
+            <span class="priority" [ngClass]="getPriorityClass(task.priority)">
+              {{ task.priority || 'MEDIUM' }}
             </span>
-          </button>
-          <span class="status">{{ task.status }}</span>
+            <span class="status">{{ task.status }}</span>
+          </div>
+
+          <span class="task-title">{{ task.title }}</span>
+          <span class="task-meta">Due: {{ task.dueDate || 'Not set' }}</span>
+
+          <div class="tile-actions">
+            <button type="button" class="link-button" (click)="openTask(task)">
+              View details
+            </button>
+            <button type="button" class="select-button" (click)="selectTask(task)">
+              Select
+            </button>
+          </div>
         </li>
       </ul>
     </section>
@@ -145,4 +152,74 @@
       <p class="message" *ngIf="message">{{ message }}</p>
     </section>
   </div>
+
+  <section class="detail-backdrop" *ngIf="openedTask">
+    <article class="task-detail" role="dialog" aria-modal="true" aria-labelledby="tl-task-detail-title">
+      <div class="detail-header">
+        <div>
+          <p class="eyebrow">Task #{{ openedTask.id }}</p>
+          <h3 id="tl-task-detail-title">{{ openedTask.title }}</h3>
+        </div>
+        <button type="button" class="icon-button" (click)="closeTask()">Close</button>
+      </div>
+
+      <p class="detail-description">{{ openedTask.description || 'No description provided.' }}</p>
+
+      <dl class="detail-grid">
+        <div>
+          <dt>Status</dt>
+          <dd>{{ openedTask.status }}</dd>
+        </div>
+        <div>
+          <dt>Priority</dt>
+          <dd>{{ openedTask.priority || 'MEDIUM' }}</dd>
+        </div>
+        <div>
+          <dt>Due Date</dt>
+          <dd>{{ openedTask.dueDate || 'Not set' }}</dd>
+        </div>
+        <div>
+          <dt>Created By</dt>
+          <dd>ID: {{ openedTask.createdBy }}</dd>
+        </div>
+      </dl>
+
+      <section class="comments-panel">
+        <h4>Comments</h4>
+
+        <p *ngIf="isLoadingComments" class="empty-state">Loading comments...</p>
+        <p *ngIf="!isLoadingComments && taskComments.length === 0" class="empty-state">
+          No comments yet.
+        </p>
+
+        <ul class="comment-list" *ngIf="!isLoadingComments && taskComments.length > 0">
+          <li *ngFor="let item of taskComments" class="comment-item">
+            <div class="comment-meta">
+              <strong>{{ item.userName }}</strong>
+              <span>{{ item.userRole }} · {{ item.createdAt | date:'short' }}</span>
+            </div>
+            <p>{{ item.comment }}</p>
+          </li>
+        </ul>
+
+        <form class="comment-form" (ngSubmit)="addComment()">
+          <textarea
+            name="tlComment"
+            [(ngModel)]="newComment"
+            placeholder="Add a comment"
+            rows="3"
+          ></textarea>
+          <button type="submit" [disabled]="!newComment.trim() || isAddingComment">
+            {{ isAddingComment ? 'Adding...' : 'Add Comment' }}
+          </button>
+        </form>
+
+        <p class="message" *ngIf="commentMessage">{{ commentMessage }}</p>
+      </section>
+
+      <button type="button" class="select-button detail-select" (click)="selectTask(openedTask); closeTask()">
+        Select for subtask
+      </button>
+    </article>
+  </section>
 </section>

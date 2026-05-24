@@ -56,14 +56,17 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/users").hasRole("SUPERVISOR")
                         .requestMatchers("/users/role/**").authenticated()
 
-                        .requestMatchers("/tasks").hasRole("SUPERVISOR")
+                        .requestMatchers(HttpMethod.POST, "/tasks")
+                        .hasRole("SUPERVISOR")
+
                         .requestMatchers("/tasks/supervisor/**").hasRole("SUPERVISOR")
                         .requestMatchers("/tasks/tl/**").authenticated()
+                        .requestMatchers("/tasks/**")
+                        .authenticated()
 
                         .requestMatchers("/subtasks").hasAnyRole("TL", "SUPERVISOR")
                         .requestMatchers("/subtasks/dev/**").authenticated()
                         .requestMatchers("/subtasks/*/status").hasRole("DEVELOPER")
-
                         .requestMatchers("/users/change-password").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/users/**")
                         .hasAnyRole("SUPERVISOR", "TL")

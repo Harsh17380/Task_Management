@@ -17,13 +17,18 @@
 
       <label>
         Password
-        <input
-          type="password"
-          name="password"
-          [(ngModel)]="credentials.password"
-          placeholder="Enter password"
-          required
-        >
+        <span class="password-field">
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            name="password"
+            [(ngModel)]="credentials.password"
+            placeholder="Enter password"
+            required
+          >
+          <button type="button" class="toggle-password" (click)="togglePasswordVisibility()">
+            {{ showPassword ? 'Hide' : 'Show' }}
+          </button>
+        </span>
       </label>
 
       <button type="submit" [disabled]="isSubmitting">

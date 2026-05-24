@@ -100,10 +100,54 @@
           <button *ngIf="subTask.status === 'DONE'" type="button" disabled>
             Done
           </button>
+          <button type="button" class="secondary-button" (click)="openComments(subTask.taskId)">
+            Comments
+          </button>
         </div>
       </li>
     </ul>
 
     <p class="message" *ngIf="message">{{ message }}</p>
+  </section>
+
+  <section class="detail-backdrop" *ngIf="openedTaskId">
+    <article class="comment-dialog" role="dialog" aria-modal="true" aria-labelledby="developer-comments-title">
+      <div class="detail-header">
+        <div>
+          <p class="eyebrow">Task #{{ openedTaskId }}</p>
+          <h3 id="developer-comments-title">Task Comments</h3>
+        </div>
+        <button type="button" class="secondary-button" (click)="closeComments()">Close</button>
+      </div>
+
+      <p *ngIf="isLoadingComments" class="empty-state">Loading comments...</p>
+      <p *ngIf="!isLoadingComments && taskComments.length === 0" class="empty-state">
+        No comments yet.
+      </p>
+
+      <ul class="comment-list" *ngIf="!isLoadingComments && taskComments.length > 0">
+        <li *ngFor="let item of taskComments" class="comment-item">
+          <div class="comment-meta">
+            <strong>{{ item.userName }}</strong>
+            <span>{{ item.userRole }} · {{ item.createdAt | date:'short' }}</span>
+          </div>
+          <p>{{ item.comment }}</p>
+        </li>
+      </ul>
+
+      <form class="comment-form" (ngSubmit)="addComment()">
+        <textarea
+          name="developerComment"
+          [(ngModel)]="newComment"
+          placeholder="Add a comment"
+          rows="3"
+        ></textarea>
+        <button type="submit" [disabled]="!newComment.trim() || isAddingComment">
+          {{ isAddingComment ? 'Adding...' : 'Add Comment' }}
+        </button>
+      </form>
+
+      <p class="message" *ngIf="commentMessage">{{ commentMessage }}</p>
+    </article>
   </section>
 </section>

@@ -125,7 +125,8 @@ h3 {
 }
 
 input,
-select {
+select,
+textarea {
   width: 100%;
   box-sizing: border-box;
   border: 1px solid #d1d5db;
@@ -157,9 +158,84 @@ button:disabled {
   cursor: not-allowed;
 }
 
+.secondary-button {
+  border: 1px solid #d1d5db;
+  background: #fff;
+  color: #111827;
+}
+
 .message {
   margin-top: 14px;
   font-weight: 700;
+}
+
+.detail-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(17, 24, 39, 0.45);
+}
+
+.comment-dialog {
+  width: min(100%, 560px);
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  padding: 22px;
+}
+
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.comment-list {
+  display: grid;
+  gap: 10px;
+  max-height: 280px;
+  overflow-y: auto;
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+}
+
+.comment-item {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.comment-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.comment-item p {
+  margin: 8px 0 0;
+}
+
+.comment-form {
+  position: sticky;
+  bottom: 0;
+  display: grid;
+  gap: 10px;
+  border-top: 1px solid #e5e7eb;
+  background: #fff;
+  padding-top: 12px;
+}
+
+.comment-form button {
+  justify-self: end;
 }
 
 @media (max-width: 760px) {

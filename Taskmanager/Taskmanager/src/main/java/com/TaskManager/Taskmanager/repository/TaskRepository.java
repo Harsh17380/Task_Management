@@ -42,6 +42,12 @@ public class TaskRepository {
         return count != null && count > 0;
     }
 
+    public boolean existsByIdAndCreatedBy(int taskId, int supervisorId) {
+        String sql = "SELECT COUNT(*) FROM tasks WHERE id = ? AND created_by = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, taskId, supervisorId);
+        return count != null && count > 0;
+    }
+
     public List<SupervisorTaskDTO> findTasksBySupervisor(int supervisorId) {
         String sql = """
                 SELECT t.id, t.title, t.description, t.assigned_to, u.name AS assigned_to_name,

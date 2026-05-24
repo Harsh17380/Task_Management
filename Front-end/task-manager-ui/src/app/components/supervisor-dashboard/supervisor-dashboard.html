@@ -67,26 +67,93 @@
       No tasks match the selected filters.
     </p>
 
-    <ul class="task-list" *ngIf="!isLoading && filteredTasks.length > 0">
-      <li *ngFor="let task of filteredTasks" class="task-item">
-        <div>
-          <span class="task-title">{{ task.title }}</span>
-          <span class="task-description">{{ task.description }}</span>
-          <span class="task-meta">Assigned TL: {{ task.assignedToName }} (ID: {{ task.assignedTo }})</span>
-          <span class="task-meta">
-            Due: {{ task.dueDate || 'Not set' }}
-            <span class="priority" [ngClass]="getPriorityClass(task.priority)">
-              {{ task.priority || 'MEDIUM' }}
-            </span>
+    <ul class="task-list tile-list" *ngIf="!isLoading && filteredTasks.length > 0">
+      <li *ngFor="let task of filteredTasks" class="task-tile">
+        <div class="tile-header">
+          <span class="priority" [ngClass]="getPriorityClass(task.priority)">
+            {{ task.priority || 'MEDIUM' }}
+          </span>
+          <span class="status" [class.completed]="task.status === 'COMPLETED'">
+            {{ task.status }}
           </span>
         </div>
 
-        <span class="status" [class.completed]="task.status === 'COMPLETED'">
-          {{ task.status }}
-        </span>
+        <span class="task-title">{{ task.title }}</span>
+        <span class="task-meta">TL: {{ task.assignedToName || 'Not assigned' }}</span>
+        <span class="task-meta">Due: {{ task.dueDate || 'Not set' }}</span>
+
+        <button type="button" class="link-button" (click)="openTask(task)">
+          View details
+        </button>
       </li>
     </ul>
 
     <p class="message" *ngIf="message">{{ message }}</p>
+  </section>
+
+  <section class="detail-backdrop" *ngIf="openedTask">
+    <article class="task-detail" role="dialog" aria-modal="true" aria-labelledby="supervisor-task-detail-title">
+      <div class="detail-header">
+        <div>
+          <p class="eyebrow">Task #{{ openedTask.id }}</p>
+          <h3 id="supervisor-task-detail-title">{{ openedTask.title }}</h3>
+        </div>
+        <button type="button" class="icon-button" (click)="closeTask()">Close</button>
+      </div>
+
+      <p class="detail-description">{{ openedTask.description || 'No description provided.' }}</p>
+
+      <dl class="detail-grid">
+        <div>
+          <dt>Status</dt>
+          <dd>{{ openedTask.status }}</dd>
+        </div>
+        <div>
+          <dt>Priority</dt>
+          <dd>{{ openedTask.priority || 'MEDIUM' }}</dd>
+        </div>
+        <div>
+          <dt>Due Date</dt>
+          <dd>{{ openedTask.dueDate || 'Not set' }}</dd>
+        </div>
+        <div>
+          <dt>Assigned TL</dt>
+          <dd>{{ openedTask.assignedToName }} (ID: {{ openedTask.assignedTo }})</dd>
+        </div>
+      </dl>
+
+      <section class="comments-panel">
+        <h4>Comments</h4>
+
+        <p *ngIf="isLoadingComments" class="empty-state">Loading comments...</p>
+        <p *ngIf="!isLoadingComments && taskComments.length === 0" class="empty-state">
+          No comments yet.
+        </p>
+
+        <ul class="comment-list" *ngIf="!isLoadingComments && taskComments.length > 0">
+          <li *ngFor="let item of taskComments" class="comment-item">
+            <div class="comment-meta">
+              <strong>{{ item.userName }}</strong>
+              <span>{{ item.userRole }} · {{ item.createdAt | date:'short' }}</span>
+            </div>
+            <p>{{ item.comment }}</p>
+          </li>
+        </ul>
+
+        <form class="comment-form" (ngSubmit)="addComment()">
+          <textarea
+            name="supervisorComment"
+            [(ngModel)]="newComment"
+            placeholder="Add a comment"
+            rows="3"
+          ></textarea>
+          <button type="submit" [disabled]="!newComment.trim() || isAddingComment">
+            {{ isAddingComment ? 'Adding...' : 'Add Comment' }}
+          </button>
+        </form>
+
+        <p class="message" *ngIf="commentMessage">{{ commentMessage }}</p>
+      </section>
+    </article>
   </section>
 </section>
