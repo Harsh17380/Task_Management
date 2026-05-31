@@ -77,6 +77,12 @@ public class UserRepository {
         return jdbcTemplate.query(sql, (rs, rowNum) -> mapUser(rs));
     }
 
+    public String findNameById(int id) {
+        String sql = "SELECT name FROM users WHERE id = ?";
+        List<String> names = jdbcTemplate.query(sql, (rs, rowNum) -> rs.getString("name"), id);
+        return names.isEmpty() ? "User #" + id : names.get(0);
+    }
+
     private User mapUser(java.sql.ResultSet rs) throws java.sql.SQLException {
         User user = new User();
         user.setId(rs.getInt("id"));

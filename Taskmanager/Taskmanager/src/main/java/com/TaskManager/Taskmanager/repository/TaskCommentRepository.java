@@ -10,6 +10,8 @@ import java.util.List;
 @Repository
 public class TaskCommentRepository {
 
+    private static final String ACTIVITY_PREFIX = "[ACTIVITY] ";
+
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
@@ -27,6 +29,18 @@ public class TaskCommentRepository {
                 comment.getUserId(),
                 comment.getComment()
         );
+    }
+
+    public int saveActivity(int taskId, int userId, String activityText) {
+        if (userId <= 0) {
+            return 0;
+        }
+
+        TaskComment comment = new TaskComment();
+        comment.setTaskId(taskId);
+        comment.setUserId(userId);
+        comment.setComment(ACTIVITY_PREFIX + activityText);
+        return save(comment);
     }
 
     public List<TaskComment> getCommentsByTaskId(int taskId) {
@@ -49,7 +63,14 @@ public class TaskCommentRepository {
             comment.setUserId(rs.getInt("user_id"));
             comment.setUserName(rs.getString("user_name"));
             comment.setUserRole(rs.getString("user_role"));
-            comment.setComment(rs.getString("comment_text"));
+            String text = rs.getString("comment_text");
+            if (text != null && text.startsWith(ACTIVITY_PREFIX)) {
+                comment.setCommentType("ACTIVITY");
+                comment.setComment(text.substring(ACTIVITY_PREFIX.length()));
+            } else {
+                comment.setCommentType("COMMENT");
+                comment.setComment(text);
+            }
             comment.setCreatedAt(rs.getTimestamp("created_at"));
 
             return comment;

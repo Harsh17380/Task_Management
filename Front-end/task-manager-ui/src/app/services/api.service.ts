@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map, shareReplay, tap, timeout } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -12,8 +13,10 @@ interface ApiResponse<T> {
   providedIn: 'root',
 })
 export class ApiService {
-  private baseUrl = 'https://task-management-en0u.onrender.com';
+  //private baseUrl = 'https://task-management-en0u.onrender.com';
   //private baseUrl = 'http://localhost:8080';
+
+  private baseUrl = environment.apiUrl;
   private requestTimeoutMs = 15000;
   private usersByRoleCache = new Map<string, Observable<any[]>>();
 

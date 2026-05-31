@@ -126,9 +126,9 @@
       </p>
 
       <ul class="comment-list" *ngIf="!isLoadingComments && taskComments.length > 0">
-        <li *ngFor="let item of taskComments" class="comment-item">
+        <li *ngFor="let item of taskComments" class="comment-item" [class.activity]="item.commentType === 'ACTIVITY'">
           <div class="comment-meta">
-            <strong>{{ item.userName }}</strong>
+            <strong>{{ item.commentType === 'ACTIVITY' ? 'Activity' : item.userName }}</strong>
             <span>{{ item.userRole }} · {{ item.createdAt | date:'short' }}</span>
           </div>
           <p>{{ item.comment }}</p>

@@ -4,6 +4,7 @@ import com.TaskManager.Taskmanager.dto.ApiResponse;
 import com.TaskManager.Taskmanager.dto.SupervisorTaskDTO;
 import com.TaskManager.Taskmanager.dto.TaskRequestDTO;
 import com.TaskManager.Taskmanager.model.Task;
+import com.TaskManager.Taskmanager.repository.TaskCommentRepository;
 import com.TaskManager.Taskmanager.repository.TaskRepository;
 import com.TaskManager.Taskmanager.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,9 @@ public class TaskService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private TaskCommentRepository taskCommentRepository;
 
     private static final List<String> ALLOWED_PRIORITIES =
             List.of("LOW", "MEDIUM", "HIGH", "URGENT");
@@ -51,7 +55,15 @@ public class TaskService {
         task.setDueDate(dto.getDueDate());
         task.setPriority(priority);
 
-        taskRepository.createTask(task);
+        int taskId = taskRepository.createTask(task);
+        if (taskId > 0) {
+            String tlName = userRepository.findNameById(dto.getAssignedTo());
+            taskCommentRepository.saveActivity(
+                    taskId,
+                    dto.getCreatedBy(),
+                    "Task created and assigned to " + tlName
+            );
+        }
         return new ApiResponse<>(true, "Task created and assigned to TL");
     }
 

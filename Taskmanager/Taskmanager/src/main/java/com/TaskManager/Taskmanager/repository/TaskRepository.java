@@ -2,10 +2,13 @@ package com.TaskManager.Taskmanager.repository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import com.TaskManager.Taskmanager.dto.SupervisorTaskDTO;
 import com.TaskManager.Taskmanager.model.Task;
 
+import java.sql.PreparedStatement;
 import java.util.List;
 
 @Repository
@@ -16,14 +19,26 @@ public class TaskRepository {
 
     public int createTask(Task task) {
         String sql = "INSERT INTO tasks (title, description, assigned_to, created_by, status, due_date, priority) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        return jdbcTemplate.update(sql,
-                task.getTitle(),
-                task.getDescription(),
-                task.getAssignedTo(),
-                task.getCreatedBy(),
-                task.getStatus(),
-                task.getDueDate(),
-                task.getPriority());
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+
+        jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(sql, new String[] {"id"});
+            ps.setString(1, task.getTitle());
+            ps.setString(2, task.getDescription());
+            ps.setInt(3, task.getAssignedTo());
+            ps.setInt(4, task.getCreatedBy());
+            ps.setString(5, task.getStatus());
+            if (task.getDueDate() == null) {
+                ps.setObject(6, null);
+            } else {
+                ps.setObject(6, task.getDueDate());
+            }
+            ps.setString(7, task.getPriority());
+            return ps;
+        }, keyHolder);
+
+        Number key = keyHolder.getKey();
+        return key == null ? 0 : key.intValue();
     }
 
     public List<Task> findTasksByTL(int tlId) {
@@ -34,6 +49,12 @@ public class TaskRepository {
     public int updateTaskStatus(int taskId, String status) {
         String sql = "UPDATE tasks SET status = ? WHERE id = ?";
         return jdbcTemplate.update(sql, status, taskId);
+    }
+
+    public String findStatusById(int taskId) {
+        String sql = "SELECT status FROM tasks WHERE id = ?";
+        List<String> statuses = jdbcTemplate.query(sql, (rs, rowNum) -> rs.getString("status"), taskId);
+        return statuses.isEmpty() ? null : statuses.get(0);
     }
 
     public boolean existsByIdAndAssignedTo(int taskId, int tlId) {

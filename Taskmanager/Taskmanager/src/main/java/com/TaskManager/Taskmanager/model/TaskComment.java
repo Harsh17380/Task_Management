@@ -10,6 +10,7 @@ public class TaskComment {
     private String userName;
     private String userRole;
     private String comment;
+    private String commentType;
     private Timestamp createdAt;
 
     public TaskComment() {
@@ -61,6 +62,14 @@ public class TaskComment {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public String getCommentType() {
+        return commentType;
+    }
+
+    public void setCommentType(String commentType) {
+        this.commentType = commentType;
     }
 
     public Timestamp getCreatedAt() {

@@ -40,6 +40,18 @@ public class SubTaskRepository {
         return jdbcTemplate.update(sql, status, subTaskId);
     }
 
+    public String findStatusById(int subTaskId) {
+        String sql = "SELECT status FROM sub_tasks WHERE id = ?";
+        List<String> statuses = jdbcTemplate.query(sql, (rs, rowNum) -> rs.getString("status"), subTaskId);
+        return statuses.isEmpty() ? null : statuses.get(0);
+    }
+
+    public String findTitleById(int subTaskId) {
+        String sql = "SELECT title FROM sub_tasks WHERE id = ?";
+        List<String> titles = jdbcTemplate.query(sql, (rs, rowNum) -> rs.getString("title"), subTaskId);
+        return titles.isEmpty() ? "Subtask #" + subTaskId : titles.get(0);
+    }
+
     public int countIncompleteSubTasks(int taskId) {
         String sql = "SELECT COUNT(*) FROM sub_tasks WHERE task_id = ? AND status != 'DONE'";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, taskId);

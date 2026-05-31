@@ -212,6 +212,11 @@ button:disabled {
   padding: 10px;
 }
 
+.comment-item.activity {
+  border-left: 4px solid #2563eb;
+  background: #eff6ff;
+}
+
 .comment-meta {
   display: flex;
   justify-content: space-between;
