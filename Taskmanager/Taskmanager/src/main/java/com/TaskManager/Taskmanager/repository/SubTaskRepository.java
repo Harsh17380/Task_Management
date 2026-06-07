@@ -22,8 +22,14 @@ public class SubTaskRepository {
                 subTask.getStatus());
     }
 
-    public List<SubTask> findByDeveloper(int devId) {
-        String sql = "SELECT * FROM sub_tasks WHERE assigned_to = ?";
+    public List<SubTask> findByDeveloper(int devId, int companyId) {
+        String sql = """
+                SELECT st.id, st.task_id, st.title, st.assigned_to, st.status,
+                       t.due_date, t.priority
+                FROM sub_tasks st
+                JOIN tasks t ON st.task_id = t.id
+                WHERE st.assigned_to = ? AND t.company_id = ?
+                """;
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
             SubTask st = new SubTask();
             st.setId(rs.getInt("id"));
@@ -31,8 +37,10 @@ public class SubTaskRepository {
             st.setTitle(rs.getString("title"));
             st.setAssignedTo(rs.getInt("assigned_to"));
             st.setStatus(rs.getString("status"));
+            st.setDueDate(rs.getObject("due_date", java.time.LocalDate.class));
+            st.setPriority(rs.getString("priority"));
             return st;
-        }, devId);
+        }, devId, companyId);
     }
 
     public int updateStatus(int subTaskId, String status) {
@@ -79,6 +87,12 @@ public class SubTaskRepository {
     public boolean existsByTaskIdAndDeveloper(int taskId, int developerId) {
         String sql = "SELECT COUNT(*) FROM sub_tasks WHERE task_id = ? AND assigned_to = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, taskId, developerId);
+        return count != null && count > 0;
+    }
+
+    public boolean existsByIdAndDeveloper(int subTaskId, int developerId) {
+        String sql = "SELECT COUNT(*) FROM sub_tasks WHERE id = ? AND assigned_to = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, subTaskId, developerId);
         return count != null && count > 0;
     }
 }

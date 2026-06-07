@@ -20,15 +20,27 @@ public class SubTaskController {
 
     // TL creates subtask
     @PostMapping
-    public ResponseEntity<ApiResponse<Void>> createSubTask(@RequestBody SubTaskRequestDTO dto) {
-        ApiResponse<Void> response = subTaskService.createSubTask(dto);
+    public ResponseEntity<ApiResponse<Void>> createSubTask(
+            @RequestBody SubTaskRequestDTO dto,
+            HttpServletRequest request
+    ) {
+        Integer userId = (Integer) request.getAttribute("userId");
+        Integer companyId = (Integer) request.getAttribute("companyId");
+        ApiResponse<Void> response =
+                subTaskService.createSubTask(dto, userId == null ? 0 : userId, companyId);
         return ResponseEntity.ok(response);
     }
 
     // Developer views subtasks
     @GetMapping("/dev/{devId}")
-    public ResponseEntity<ApiResponse<List<SubTask>>> getSubTasks(@PathVariable int devId) {
-        List<SubTask> subTasks = subTaskService.getSubTasksForDeveloper(devId);
+    public ResponseEntity<ApiResponse<List<SubTask>>> getSubTasks(
+            @PathVariable int devId,
+            HttpServletRequest request
+    ) {
+        Integer userId = (Integer) request.getAttribute("userId");
+        Integer companyId = (Integer) request.getAttribute("companyId");
+        List<SubTask> subTasks =
+                subTaskService.getSubTasksForDeveloper(devId, userId == null ? 0 : userId, companyId);
         return ResponseEntity.ok(new ApiResponse<>(true, "Subtasks fetched successfully", subTasks));
     }
 

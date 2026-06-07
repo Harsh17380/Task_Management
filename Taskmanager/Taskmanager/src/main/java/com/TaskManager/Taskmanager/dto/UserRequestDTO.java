@@ -7,6 +7,7 @@ public class UserRequestDTO {
     private String password;
     private String role;
     private boolean status;
+    private String companyName;
 
     public boolean getStatus() {
         return status;
@@ -46,5 +47,13 @@ public class UserRequestDTO {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getCompanyName() {
+        return companyName;
+    }
+
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
     }
 }

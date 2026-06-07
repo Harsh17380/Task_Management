@@ -10,6 +10,7 @@
     <div class="user-summary">
       <span>{{ currentUser.name }}</span>
       <small>{{ currentUser.email }}</small>
+      <small *ngIf="currentUser.companyName">{{ currentUser.companyName }}</small>
       <button type="button" (click)="logout()">Logout</button>
     </div>
   </header>
@@ -55,7 +56,6 @@
     >
       Developer Dashboard
     </button>
-    <!-- User Management tab: visible to SUPERVISOR and TL -->
     <button
       *ngIf="canAccess('user-management')"
       type="button"
@@ -79,7 +79,10 @@
       *ngIf="activeView === 'supervisor-dashboard' && canAccess('supervisor-dashboard')"
       [currentUser]="currentUser"
     ></app-supervisor-dashboard>
-    <app-register *ngIf="activeView === 'register' && canAccess('register')"></app-register>
+    <app-register
+      *ngIf="activeView === 'register' && canAccess('register')"
+      [currentUser]="currentUser"
+    ></app-register>
     <app-task-create
       *ngIf="activeView === 'task-create' && canAccess('task-create')"
       [currentUser]="currentUser"

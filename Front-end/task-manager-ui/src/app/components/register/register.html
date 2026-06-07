@@ -1,5 +1,6 @@
 <section class="form-panel">
-  <h2>Create User</h2>
+  <p class="eyebrow">{{ isSuperAdmin ? 'Platform Administration' : currentUser?.companyName }}</p>
+  <h2>{{ isSuperAdmin ? 'Create Company Administrator' : 'Create Company User' }}</h2>
 
   <form class="form-grid" (ngSubmit)="createUser()">
     <label>
@@ -17,18 +18,29 @@
       <input name="password" type="password" [(ngModel)]="user.password" placeholder="Password">
     </label>
 
-    <label>
+    <label *ngIf="isSuperAdmin">
+      Company Name
+      <input name="companyName" [(ngModel)]="user.companyName" placeholder="Unique company name">
+    </label>
+
+    <label *ngIf="!isSuperAdmin">
       Role
       <select name="role" [(ngModel)]="user.role">
         <option value="" disabled>Select role</option>
         <option value="SUPERVISOR">Supervisor</option>
+        <option value="MANAGER">Manager</option>
         <option value="TL">Team Lead</option>
         <option value="DEVELOPER">Developer</option>
       </select>
     </label>
 
+    <label *ngIf="isSuperAdmin">
+      Role
+      <span class="locked-value">Company Administrator</span>
+    </label>
+
     <button type="submit" [disabled]="isSubmitting">
-      {{ isSubmitting ? 'Creating...' : 'Create User' }}
+      {{ isSubmitting ? 'Creating...' : (isSuperAdmin ? 'Create Company' : 'Create User') }}
     </button>
   </form>
 

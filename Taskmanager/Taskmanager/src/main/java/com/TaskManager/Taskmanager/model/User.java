@@ -8,6 +8,8 @@ public class User {
     private String password;
     private String role;
     private boolean status;
+    private Integer companyId;
+    private String companyName;
 
     public boolean getStatus() {
         return status;
@@ -57,5 +59,21 @@ public class User {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public Integer getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Integer companyId) {
+        this.companyId = companyId;
+    }
+
+    public String getCompanyName() {
+        return companyName;
+    }
+
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
     }
 }

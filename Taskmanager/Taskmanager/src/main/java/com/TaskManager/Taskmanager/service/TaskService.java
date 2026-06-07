@@ -27,18 +27,22 @@ public class TaskService {
     private static final List<String> ALLOWED_PRIORITIES =
             List.of("LOW", "MEDIUM", "HIGH", "URGENT");
 
-    public ApiResponse<Void> createTask(TaskRequestDTO dto) {
+    public ApiResponse<Void> createTask(TaskRequestDTO dto, int actorUserId, Integer companyId) {
 
         if (dto.getTitle() == null || dto.getTitle().trim().isEmpty()) {
             return new ApiResponse<>(false, "Task title is required");
         }
 
-        if (!userRepository.existsByIdAndRole(dto.getCreatedBy(), "SUPERVISOR")) {
+        if (companyId == null || companyId <= 0) {
+            return new ApiResponse<>(false, "Company account is not configured");
+        }
+
+        if (!userRepository.existsByIdAndRoleAndCompany(actorUserId, "SUPERVISOR", companyId)) {
             return new ApiResponse<>(false, "Invalid Supervisor ID");
         }
 
-        if (!userRepository.existsByIdAndRole(dto.getAssignedTo(), "TL")) {
-            return new ApiResponse<>(false, "Invalid TL ID");
+        if (!userRepository.existsByIdAndRoleAndCompany(dto.getAssignedTo(), "TL", companyId)) {
+            return new ApiResponse<>(false, "Selected TL does not belong to your company");
         }
 
         String priority = normalizePriority(dto.getPriority());
@@ -50,29 +54,36 @@ public class TaskService {
         task.setTitle(dto.getTitle().trim());
         task.setDescription(dto.getDescription());
         task.setAssignedTo(dto.getAssignedTo());
-        task.setCreatedBy(dto.getCreatedBy());
+        task.setCreatedBy(actorUserId);
         task.setStatus("PENDING");
         task.setDueDate(dto.getDueDate());
         task.setPriority(priority);
+        task.setCompanyId(companyId);
 
         int taskId = taskRepository.createTask(task);
         if (taskId > 0) {
             String tlName = userRepository.findNameById(dto.getAssignedTo());
             taskCommentRepository.saveActivity(
                     taskId,
-                    dto.getCreatedBy(),
+                    actorUserId,
                     "Task created and assigned to " + tlName
             );
         }
         return new ApiResponse<>(true, "Task created and assigned to TL");
     }
 
-    public List<Task> getTasksForTL(int tlId) {
-        return taskRepository.findTasksByTL(tlId);
+    public List<Task> getTasksForTL(int tlId, int actorUserId, Integer companyId) {
+        if (companyId == null || tlId != actorUserId) {
+            return List.of();
+        }
+        return taskRepository.findTasksByTL(tlId, companyId);
     }
 
-    public List<SupervisorTaskDTO> getTasksForSupervisor(int supervisorId) {
-        return taskRepository.findTasksBySupervisor(supervisorId);
+    public List<SupervisorTaskDTO> getTasksForSupervisor(int supervisorId, int actorUserId, Integer companyId) {
+        if (companyId == null || supervisorId != actorUserId) {
+            return List.of();
+        }
+        return taskRepository.findTasksBySupervisor(supervisorId, companyId);
     }
 
     private String normalizePriority(String priority) {

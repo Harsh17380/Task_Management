@@ -68,6 +68,34 @@ export class SupervisorDashboardComponent implements OnInit {
     return this.tasks.filter((task) => task.status === status).length;
   }
 
+  countOverdue() {
+    const today = this.todayIso();
+    return this.tasks.filter((task) =>
+      task.dueDate && task.dueDate < today && task.status !== 'COMPLETED'
+    ).length;
+  }
+
+  countDueToday() {
+    const today = this.todayIso();
+    return this.tasks.filter((task) =>
+      task.dueDate === today && task.status !== 'COMPLETED'
+    ).length;
+  }
+
+  completionRate() {
+    if (this.tasks.length === 0) return 0;
+    return Math.round((this.countByStatus('COMPLETED') / this.tasks.length) * 100);
+  }
+
+  countByPriority(priority: string) {
+    return this.tasks.filter((task) => (task.priority || 'MEDIUM') === priority).length;
+  }
+
+  priorityPercent(priority: string) {
+    if (this.tasks.length === 0) return 0;
+    return Math.round((this.countByPriority(priority) / this.tasks.length) * 100);
+  }
+
   get filteredTasks() {
     const search = this.searchTerm.trim().toLowerCase();
 
@@ -86,6 +114,12 @@ export class SupervisorDashboardComponent implements OnInit {
 
   getPriorityClass(priority: string) {
     return `priority-${(priority || 'MEDIUM').toLowerCase()}`;
+  }
+
+  private todayIso() {
+    const now = new Date();
+    const offsetDate = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+    return offsetDate.toISOString().slice(0, 10);
   }
 
   openTask(task: any) {

@@ -1,1 +1,72 @@
 /* You can add global styles to this file, and also import other style files */
+
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.alert-card strong {
+  color: #b91c1c;
+}
+
+.priority-bars {
+  display: grid;
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.priority-bars div {
+  display: grid;
+  grid-template-columns: 54px 1fr 22px;
+  gap: 8px;
+  align-items: center;
+}
+
+.priority-bars span {
+  height: 7px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  overflow: hidden;
+}
+
+.priority-bars i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #2563eb;
+}
+
+.col-company {
+  min-width: 150px;
+  color: #4b5563 !important;
+}
+
+.badge-super-admin {
+  border-color: #fecaca;
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.badge-company-admin {
+  border-color: #ddd6fe;
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
+.badge-manager {
+  border-color: #fde68a;
+  background: #fef3c7;
+  color: #92400e;
+}
+
+@media (max-width: 760px) {
+  .analytics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .col-company {
+    display: none;
+  }
+}

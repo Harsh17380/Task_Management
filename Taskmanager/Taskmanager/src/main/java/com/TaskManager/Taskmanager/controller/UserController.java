@@ -19,8 +19,13 @@ public class UserController {
 
     // Register user — requires SUPERVISOR role (enforced by SecurityConfig)
     @PostMapping
-    public ResponseEntity<ApiResponse<Void>> createUser(@RequestBody UserRequestDTO dto) {
-        ApiResponse<Void> response = userService.createUser(dto);
+    public ResponseEntity<ApiResponse<Void>> createUser(
+            @RequestBody UserRequestDTO dto,
+            HttpServletRequest request
+    ) {
+        String role = (String) request.getAttribute("role");
+        Integer companyId = (Integer) request.getAttribute("companyId");
+        ApiResponse<Void> response = userService.createUser(dto, role, companyId);
         return ResponseEntity.ok(response);
     }
 
@@ -47,8 +52,13 @@ public class UserController {
 
     // Get users by role
     @GetMapping("/role/{role}")
-    public ResponseEntity<ApiResponse<List<UserResponseDTO>>> getUsersByRole(@PathVariable String role) {
-        List<User> users = userService.getUsersByRole(role);
+    public ResponseEntity<ApiResponse<List<UserResponseDTO>>> getUsersByRole(
+            @PathVariable String role,
+            HttpServletRequest request
+    ) {
+        String loggedInRole = (String) request.getAttribute("role");
+        Integer companyId = (Integer) request.getAttribute("companyId");
+        List<User> users = userService.getUsersByRole(role, loggedInRole, companyId);
         List<UserResponseDTO> responseData = users.stream()
                 .map(UserResponseDTO::new)
                 .toList();
@@ -66,14 +76,14 @@ public class UserController {
         String loggedInRole =
                 (String) request.getAttribute("role");
 
-        String loggedInEmail =
-                (String) request.getAttribute("email");
+        Integer loggedInCompanyId =
+                (Integer) request.getAttribute("companyId");
 
         ApiResponse<Void> response =
                 userService.deleteUser(
                         loggedInUserId,
                         loggedInRole,
-                        loggedInEmail,
+                        loggedInCompanyId,
                         id
                 );
 
@@ -82,10 +92,12 @@ public class UserController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<UserResponseDTO>>> getAllUsers(HttpServletRequest request) {
 
-        String loggedInEmail =
-                (String) request.getAttribute("email");
+        String loggedInRole =
+                (String) request.getAttribute("role");
+        Integer companyId =
+                (Integer) request.getAttribute("companyId");
 
-        ApiResponse<List<User>> usersResponse = userService.getAllUsers(loggedInEmail);
+        ApiResponse<List<User>> usersResponse = userService.getAllUsers(loggedInRole, companyId);
 
         if (!usersResponse.isSuccess()) {
             return ResponseEntity.ok(

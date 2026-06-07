@@ -22,6 +22,10 @@ export class ApiService {
 
   constructor(private http: HttpClient) {}
 
+  clearUserCache() {
+    this.usersByRoleCache.clear();
+  }
+
   login(credentials: { email: string; password: string }) {
     return this.http
       .post<ApiResponse<any>>(`${this.baseUrl}/users/login`, credentials)

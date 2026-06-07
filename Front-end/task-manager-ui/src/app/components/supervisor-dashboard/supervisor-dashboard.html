@@ -29,6 +29,41 @@
     </div>
   </section>
 
+  <section class="analytics-grid">
+    <div class="summary-card alert-card">
+      <span>Overdue</span>
+      <strong>{{ countOverdue() }}</strong>
+    </div>
+    <div class="summary-card">
+      <span>Due Today</span>
+      <strong>{{ countDueToday() }}</strong>
+    </div>
+    <div class="summary-card">
+      <span>Completion Rate</span>
+      <strong>{{ completionRate() }}%</strong>
+    </div>
+    <div class="summary-card priority-card">
+      <span>Tasks by Priority</span>
+      <div class="priority-bars">
+        <div>
+          <small>High</small>
+          <span><i [style.width.%]="priorityPercent('HIGH')"></i></span>
+          <b>{{ countByPriority('HIGH') }}</b>
+        </div>
+        <div>
+          <small>Medium</small>
+          <span><i [style.width.%]="priorityPercent('MEDIUM')"></i></span>
+          <b>{{ countByPriority('MEDIUM') }}</b>
+        </div>
+        <div>
+          <small>Low</small>
+          <span><i [style.width.%]="priorityPercent('LOW')"></i></span>
+          <b>{{ countByPriority('LOW') }}</b>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="panel">
     <div class="panel-header">
       <h3>Created Tasks</h3>

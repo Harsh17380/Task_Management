@@ -10,6 +10,8 @@ public class LoginResponseDTO {
     private String role;
     private String token;  // JWT token
     private boolean status;
+    private Integer companyId;
+    private String companyName;
 
     public boolean getStatus() {
         return status;
@@ -26,6 +28,8 @@ public class LoginResponseDTO {
         this.role = user.getRole();
         this.token = token;
         this.status = user.getStatus();
+        this.companyId = user.getCompanyId();
+        this.companyName = user.getCompanyName();
     }
 
     public int getId() { return id; }
@@ -42,4 +46,10 @@ public class LoginResponseDTO {
 
     public String getToken() { return token; }
     public void setToken(String token) { this.token = token; }
+
+    public Integer getCompanyId() { return companyId; }
+    public void setCompanyId(Integer companyId) { this.companyId = companyId; }
+
+    public String getCompanyName() { return companyName; }
+    public void setCompanyName(String companyName) { this.companyName = companyName; }
 }

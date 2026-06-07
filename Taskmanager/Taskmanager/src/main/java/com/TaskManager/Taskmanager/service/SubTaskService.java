@@ -27,7 +27,7 @@ public class SubTaskService {
     @Autowired
     private TaskCommentRepository taskCommentRepository;
 
-    public ApiResponse<Void> createSubTask(SubTaskRequestDTO dto) {
+    public ApiResponse<Void> createSubTask(SubTaskRequestDTO dto, int actorUserId, Integer companyId) {
 
         if (dto.getTaskId() <= 0) {
             return new ApiResponse<>(false, "Task is required");
@@ -37,16 +37,20 @@ public class SubTaskService {
             return new ApiResponse<>(false, "Subtask title is required");
         }
 
-        if (!userRepository.existsByIdAndRole(dto.getTlId(), "TL")) {
+        if (companyId == null || companyId <= 0) {
+            return new ApiResponse<>(false, "Company account is not configured");
+        }
+
+        if (!userRepository.existsByIdAndRoleAndCompany(actorUserId, "TL", companyId)) {
             return new ApiResponse<>(false, "Invalid TL ID");
         }
 
-        if (!taskRepository.existsByIdAndAssignedTo(dto.getTaskId(), dto.getTlId())) {
+        if (!taskRepository.existsByIdAndAssignedToAndCompany(dto.getTaskId(), actorUserId, companyId)) {
             return new ApiResponse<>(false, "Task is not assigned to this TL");
         }
 
-        if (!userRepository.existsByIdAndRole(dto.getAssignedTo(), "DEVELOPER")) {
-            return new ApiResponse<>(false, "Invalid Developer ID");
+        if (!userRepository.existsByIdAndRoleAndCompany(dto.getAssignedTo(), "DEVELOPER", companyId)) {
+            return new ApiResponse<>(false, "Selected developer does not belong to your company");
         }
 
         SubTask subTask = new SubTask();
@@ -59,15 +63,18 @@ public class SubTaskService {
         String developerName = userRepository.findNameById(dto.getAssignedTo());
         taskCommentRepository.saveActivity(
                 dto.getTaskId(),
-                dto.getTlId(),
+                actorUserId,
                 "Subtask \"" + subTask.getTitle() + "\" assigned to " + developerName
         );
-        updateParentTaskStatus(dto.getTaskId(), dto.getTlId());
+        updateParentTaskStatus(dto.getTaskId(), actorUserId);
         return new ApiResponse<>(true, "Subtask created and assigned to Developer");
     }
 
-    public List<SubTask> getSubTasksForDeveloper(int devId) {
-        return subTaskRepository.findByDeveloper(devId);
+    public List<SubTask> getSubTasksForDeveloper(int devId, int actorUserId, Integer companyId) {
+        if (companyId == null || devId != actorUserId) {
+            return List.of();
+        }
+        return subTaskRepository.findByDeveloper(devId, companyId);
     }
 
     public ApiResponse<Void> updateStatus(int subTaskId, String status, int actorUserId) {
@@ -77,6 +84,10 @@ public class SubTaskService {
         }
 
         String normalizedStatus = status.trim().toUpperCase();
+
+        if (!subTaskRepository.existsByIdAndDeveloper(subTaskId, actorUserId)) {
+            return new ApiResponse<>(false, "You can only update subtasks assigned to you");
+        }
 
         if (!"PENDING".equals(normalizedStatus)
                 && !"IN_PROGRESS".equals(normalizedStatus)

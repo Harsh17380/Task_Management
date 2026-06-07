@@ -52,16 +52,18 @@ export class UserManagementComponent implements OnInit {
     });
   }
 
-  // Returns true if the logged-in user can delete the target user
   canDelete(targetUser: any): boolean {
     if (!this.currentUser) return false;
-
-    // Cannot delete yourself
     if (this.currentUser.id === targetUser.id) return false;
-
     if (!targetUser.status) return false;
 
-    return this.currentUser.email?.toLowerCase() === 'admin@corequeue.com';
+    if (this.currentUser.role === 'SUPER_ADMIN') {
+      return targetUser.role !== 'SUPER_ADMIN';
+    }
+
+    return this.currentUser.role === 'COMPANY_ADMIN'
+      && targetUser.companyId === this.currentUser.companyId
+      && !['SUPER_ADMIN', 'COMPANY_ADMIN'].includes(targetUser.role);
   }
 
   deleteUser(user: any) {
@@ -119,9 +121,20 @@ export class UserManagementComponent implements OnInit {
     return this.users.filter(u => u.role === role).length;
   }
 
+  countByUserStatus(isActive: boolean): number {
+    return this.users.filter(u => Boolean(u.status) === isActive).length;
+  }
+
+  countCompanies(): number {
+    return new Set(this.users.map(u => u.companyId).filter(Boolean)).size;
+  }
+
   getRoleBadgeClass(role: string): string {
     switch (role) {
+      case 'SUPER_ADMIN': return 'badge-super-admin';
+      case 'COMPANY_ADMIN': return 'badge-company-admin';
       case 'SUPERVISOR': return 'badge-supervisor';
+      case 'MANAGER': return 'badge-manager';
       case 'TL': return 'badge-tl';
       case 'DEVELOPER': return 'badge-developer';
       default: return '';

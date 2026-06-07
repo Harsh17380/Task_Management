@@ -124,6 +124,34 @@ export class DeveloperDashboardComponent implements OnInit {
     return this.subTasks.filter((subTask) => subTask.status === status).length;
   }
 
+  countOverdue() {
+    const today = this.todayIso();
+    return this.subTasks.filter((subTask) =>
+      subTask.dueDate && subTask.dueDate < today && subTask.status !== 'DONE'
+    ).length;
+  }
+
+  countDueToday() {
+    const today = this.todayIso();
+    return this.subTasks.filter((subTask) =>
+      subTask.dueDate === today && subTask.status !== 'DONE'
+    ).length;
+  }
+
+  completionRate() {
+    if (this.subTasks.length === 0) return 0;
+    return Math.round((this.countByStatus('DONE') / this.subTasks.length) * 100);
+  }
+
+  countByPriority(priority: string) {
+    return this.subTasks.filter((subTask) => (subTask.priority || 'MEDIUM') === priority).length;
+  }
+
+  priorityPercent(priority: string) {
+    if (this.subTasks.length === 0) return 0;
+    return Math.round((this.countByPriority(priority) / this.subTasks.length) * 100);
+  }
+
   get filteredSubTasks() {
     const search = this.searchTerm.trim().toLowerCase();
 
@@ -136,6 +164,12 @@ export class DeveloperDashboardComponent implements OnInit {
 
       return matchesSearch && matchesStatus;
     });
+  }
+
+  private todayIso() {
+    const now = new Date();
+    const offsetDate = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+    return offsetDate.toISOString().slice(0, 10);
   }
 
   openComments(taskId: number) {

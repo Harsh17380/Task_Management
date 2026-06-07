@@ -9,6 +9,7 @@ import { TlDashboardComponent } from './components/tl-dashboard/tl-dashboard';
 import { AuthService } from './services/auth.service';
 import { ChangePasswordComponent } from './components/change-password/change-password';
 import { UserManagementComponent } from './components/user-management/user-management';
+import { ApiService } from './services/api.service';
 
 type ActiveView =
   | 'register'
@@ -40,7 +41,10 @@ export class App {
   currentUser: any = null;
   activeView: ActiveView = 'tl-dashboard';
 
-  constructor(private authService: AuthService) {
+  constructor(
+    private authService: AuthService,
+    private api: ApiService,
+  ) {
     // Restore session on app load — validates token expiry too
     if (authService.isLoggedIn()) {
       this.currentUser = authService.getUser();
@@ -49,12 +53,14 @@ export class App {
   }
 
   onLoggedIn(user: any) {
+    this.api.clearUserCache();
     this.currentUser = user;
     this.activeView = this.getDefaultView(user.role);
   }
 
   logout() {
     this.authService.logout();
+    this.api.clearUserCache();
     this.currentUser = null;
     this.activeView = 'tl-dashboard';
   }
@@ -72,9 +78,12 @@ export class App {
       return this.isAdminUser();
     }
 
+    if (role === 'SUPER_ADMIN' || role === 'COMPANY_ADMIN') {
+      return ['register', 'user-management', 'change-password'].includes(view);
+    }
+
     if (role === 'SUPERVISOR') {
       return [
-        'register',
         'task-create',
         'supervisor-dashboard',
         'change-password',
@@ -89,16 +98,22 @@ export class App {
       return ['developer-dashboard', 'change-password'].includes(view);
     }
 
+    if (role === 'MANAGER') {
+      return ['change-password'].includes(view);
+    }
+
     return false;
   }
 
   private isAdminUser(): boolean {
-    return this.currentUser?.email?.toLowerCase() === 'admin@corequeue.com';
+    return ['SUPER_ADMIN', 'COMPANY_ADMIN'].includes(this.currentUser?.role);
   }
 
   private getDefaultView(role?: string): ActiveView {
+    if (role === 'SUPER_ADMIN' || role === 'COMPANY_ADMIN') return 'user-management';
     if (role === 'SUPERVISOR') return 'supervisor-dashboard';
     if (role === 'DEVELOPER') return 'developer-dashboard';
+    if (role === 'MANAGER') return 'change-password';
     return 'tl-dashboard';
   }
 }

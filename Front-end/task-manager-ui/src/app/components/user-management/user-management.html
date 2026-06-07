@@ -16,9 +16,21 @@
       <span>Total Users</span>
       <strong>{{ users.length }}</strong>
     </div>
+    <div class="summary-card" *ngIf="currentUser?.role === 'SUPER_ADMIN'">
+      <span>Companies</span>
+      <strong>{{ countCompanies() }}</strong>
+    </div>
+    <div class="summary-card">
+      <span>Company Admins</span>
+      <strong>{{ countByRole('COMPANY_ADMIN') }}</strong>
+    </div>
     <div class="summary-card">
       <span>Supervisors</span>
       <strong>{{ countByRole('SUPERVISOR') }}</strong>
+    </div>
+    <div class="summary-card">
+      <span>Managers</span>
+      <strong>{{ countByRole('MANAGER') }}</strong>
     </div>
     <div class="summary-card">
       <span>Team Leads</span>
@@ -27,6 +39,14 @@
     <div class="summary-card">
       <span>Developers</span>
       <strong>{{ countByRole('DEVELOPER') }}</strong>
+    </div>
+    <div class="summary-card">
+      <span>Active Users</span>
+      <strong>{{ countByUserStatus(true) }}</strong>
+    </div>
+    <div class="summary-card">
+      <span>Inactive Users</span>
+      <strong>{{ countByUserStatus(false) }}</strong>
     </div>
   </section>
 
@@ -50,6 +70,7 @@
             <th>ID</th>
             <th>Name</th>
             <th>Email</th>
+            <th>Company</th>
             <th>Role</th>
             <th>Status</th>
             <th>Action</th>
@@ -66,6 +87,7 @@
               <span class="you-label" *ngIf="user.id === currentUser?.id">(You)</span>
             </td>
             <td class="col-email">{{ user.email }}</td>
+            <td class="col-company">{{ user.companyName || 'Platform' }}</td>
             <td class="col-role">
               <span class="role-badge" [ngClass]="getRoleBadgeClass(user.role)">
                 {{ user.role }}
@@ -86,7 +108,7 @@
               >
                 {{ isDeleting(user.id) ? 'Deleting...' : 'Delete' }}
               </button>
-              <span *ngIf="!canDelete(user)" class="no-action">—</span>
+              <span *ngIf="!canDelete(user)" class="no-action">-</span>
             </td>
           </tr>
         </tbody>
@@ -101,7 +123,8 @@
       <p class="eyebrow">Confirm action</p>
       <h3 id="delete-user-title">Deactivate user?</h3>
       <p class="dialog-copy">
-        {{ userPendingDelete.name }} ({{ userPendingDelete.role }}) will no longer be able to log in or receive new assignments.
+        {{ userPendingDelete.name }} ({{ userPendingDelete.role }}) from
+        {{ userPendingDelete.companyName || 'the platform' }} will no longer be able to log in or receive new assignments.
       </p>
 
       <div class="dialog-actions">

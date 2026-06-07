@@ -12,6 +12,7 @@ public class Task {
     private String status;
     private LocalDate dueDate;
     private String priority;
+    private int companyId;
 
     // getters & setters
 
@@ -77,5 +78,13 @@ public class Task {
 
     public void setPriority(String priority) {
         this.priority = priority;
+    }
+
+    public int getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(int companyId) {
+        this.companyId = companyId;
     }
 }

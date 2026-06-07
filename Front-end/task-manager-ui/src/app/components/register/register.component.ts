@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { ApiService } from '../../services/api.service';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
@@ -12,11 +12,14 @@ import { CommonModule } from '@angular/common';
   styleUrl: './register.css',
 })
 export class RegisterComponent implements OnInit {
+  @Input() currentUser: any = null;
+
   user = {
     name: '',
     email: '',
     password: '',
     role: '',
+    companyName: '',
   };
   isSubmitting = false;
   message = '';
@@ -29,7 +32,11 @@ export class RegisterComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    //this.loadUsers();
+    this.resetForm();
+  }
+
+  get isSuperAdmin(): boolean {
+    return this.currentUser?.role === 'SUPER_ADMIN';
   }
 
   createUser() {
@@ -37,7 +44,8 @@ export class RegisterComponent implements OnInit {
       !this.user.name.trim() ||
       !this.user.email.trim() ||
       !this.user.password ||
-      !this.user.role
+      !this.user.role ||
+      (this.isSuperAdmin && !this.user.companyName.trim())
     ) {
       this.message = 'Fill all user details before creating user.';
       this.messageType = 'error';
@@ -63,12 +71,7 @@ export class RegisterComponent implements OnInit {
           this.message = res.message;
           this.messageType = res.success ? 'success' : 'error';
           if (res.success) {
-            this.user = {
-              name: '',
-              email: '',
-              password: '',
-              role: '',
-            };
+            this.resetForm();
           }
           this.cdr.detectChanges();
         },
@@ -79,6 +82,16 @@ export class RegisterComponent implements OnInit {
           this.cdr.detectChanges();
         },
       });
+  }
+
+  private resetForm() {
+    this.user = {
+      name: '',
+      email: '',
+      password: '',
+      role: this.isSuperAdmin ? 'COMPANY_ADMIN' : '',
+      companyName: '',
+    };
   }
   /*loadUsers() {
     this.api.getAllUsers().subscribe({

@@ -18,7 +18,7 @@ public class TaskRepository {
     private JdbcTemplate jdbcTemplate;
 
     public int createTask(Task task) {
-        String sql = "INSERT INTO tasks (title, description, assigned_to, created_by, status, due_date, priority) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO tasks (title, description, assigned_to, created_by, status, due_date, priority, company_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(connection -> {
@@ -34,6 +34,7 @@ public class TaskRepository {
                 ps.setObject(6, task.getDueDate());
             }
             ps.setString(7, task.getPriority());
+            ps.setInt(8, task.getCompanyId());
             return ps;
         }, keyHolder);
 
@@ -41,9 +42,9 @@ public class TaskRepository {
         return key == null ? 0 : key.intValue();
     }
 
-    public List<Task> findTasksByTL(int tlId) {
-        String sql = "SELECT * FROM tasks WHERE assigned_to = ? ORDER BY CASE WHEN due_date IS NULL THEN 1 ELSE 0 END, due_date ASC, id DESC";
-        return jdbcTemplate.query(sql, (rs, rowNum) -> mapTask(rs), tlId);
+    public List<Task> findTasksByTL(int tlId, int companyId) {
+        String sql = "SELECT * FROM tasks WHERE assigned_to = ? AND company_id = ? ORDER BY CASE WHEN due_date IS NULL THEN 1 ELSE 0 END, due_date ASC, id DESC";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> mapTask(rs), tlId, companyId);
     }
 
     public int updateTaskStatus(int taskId, String status) {
@@ -63,19 +64,25 @@ public class TaskRepository {
         return count != null && count > 0;
     }
 
+    public boolean existsByIdAndAssignedToAndCompany(int taskId, int tlId, int companyId) {
+        String sql = "SELECT COUNT(*) FROM tasks WHERE id = ? AND assigned_to = ? AND company_id = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, taskId, tlId, companyId);
+        return count != null && count > 0;
+    }
+
     public boolean existsByIdAndCreatedBy(int taskId, int supervisorId) {
         String sql = "SELECT COUNT(*) FROM tasks WHERE id = ? AND created_by = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, taskId, supervisorId);
         return count != null && count > 0;
     }
 
-    public List<SupervisorTaskDTO> findTasksBySupervisor(int supervisorId) {
+    public List<SupervisorTaskDTO> findTasksBySupervisor(int supervisorId, int companyId) {
         String sql = """
                 SELECT t.id, t.title, t.description, t.assigned_to, u.name AS assigned_to_name,
                        t.created_by, t.status, t.due_date, t.priority
                 FROM tasks t
                 JOIN users u ON t.assigned_to = u.id
-                WHERE t.created_by = ?
+                WHERE t.created_by = ? AND t.company_id = ?
                 ORDER BY t.id DESC
                 """;
 
@@ -91,7 +98,7 @@ public class TaskRepository {
             task.setDueDate(rs.getObject("due_date", java.time.LocalDate.class));
             task.setPriority(rs.getString("priority"));
             return task;
-        }, supervisorId);
+        }, supervisorId, companyId);
     }
 
     private Task mapTask(java.sql.ResultSet rs) throws java.sql.SQLException {
@@ -104,6 +111,7 @@ public class TaskRepository {
         task.setStatus(rs.getString("status"));
         task.setDueDate(rs.getObject("due_date", java.time.LocalDate.class));
         task.setPriority(rs.getString("priority"));
+        task.setCompanyId(rs.getInt("company_id"));
         return task;
     }
 }

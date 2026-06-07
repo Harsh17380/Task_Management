@@ -9,6 +9,8 @@ public class UserResponseDTO {
     private String email;
     private String role;
     private boolean status;
+    private Integer companyId;
+    private String companyName;
 
     public boolean getStatus() {
         return status;
@@ -24,6 +26,8 @@ public class UserResponseDTO {
         this.email = user.getEmail();
         this.role = user.getRole();
         this.status = user.getStatus();
+        this.companyId = user.getCompanyId();
+        this.companyName = user.getCompanyName();
     }
 
     public int getId() {
@@ -56,5 +60,21 @@ public class UserResponseDTO {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public Integer getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Integer companyId) {
+        this.companyId = companyId;
+    }
+
+    public String getCompanyName() {
+        return companyName;
+    }
+
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
     }
 }

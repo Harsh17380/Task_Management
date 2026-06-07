@@ -51,6 +51,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 if (jwtUtil.validateToken(jwt, email)) {
                     String role = jwtUtil.extractRole(jwt);
                     Integer userId = jwtUtil.extractUserId(jwt);
+                    Integer companyId = jwtUtil.extractCompanyId(jwt);
 
                     List<SimpleGrantedAuthority> authorities =
                             List.of(new SimpleGrantedAuthority("ROLE_" + role));
@@ -65,6 +66,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     request.setAttribute("userId", userId);
                     request.setAttribute("role", role);
                     request.setAttribute("email", email);
+                    request.setAttribute("companyId", companyId);
 
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }

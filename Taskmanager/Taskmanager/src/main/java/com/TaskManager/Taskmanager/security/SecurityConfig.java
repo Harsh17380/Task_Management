@@ -1,10 +1,14 @@
 package com.TaskManager.Taskmanager.security;
 
+import com.TaskManager.Taskmanager.dto.ApiResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -26,6 +30,9 @@ public class SecurityConfig {
     @Autowired
     private JwtAuthFilter jwtAuthFilter;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
@@ -36,6 +43,25 @@ public class SecurityConfig {
 
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                            objectMapper.writeValue(
+                                    response.getWriter(),
+                                    new ApiResponse<>(false, "Authentication required. Please login again.")
+                            );
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setStatus(HttpStatus.FORBIDDEN.value());
+                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                            objectMapper.writeValue(
+                                    response.getWriter(),
+                                    new ApiResponse<>(false, "You do not have permission to perform this action.")
+                            );
+                        })
+                )
 
                 .authorizeHttpRequests(auth -> auth
 
@@ -53,25 +79,25 @@ public class SecurityConfig {
                         ).permitAll()
 
                         // Protected endpoints
-                        .requestMatchers(HttpMethod.POST, "/users").hasRole("SUPERVISOR")
+                        .requestMatchers(HttpMethod.POST, "/users").hasAnyRole("SUPER_ADMIN", "COMPANY_ADMIN")
                         .requestMatchers("/users/role/**").authenticated()
 
                         .requestMatchers(HttpMethod.POST, "/tasks")
                         .hasRole("SUPERVISOR")
 
                         .requestMatchers("/tasks/supervisor/**").hasRole("SUPERVISOR")
-                        .requestMatchers("/tasks/tl/**").authenticated()
+                        .requestMatchers("/tasks/tl/**").hasRole("TL")
                         .requestMatchers("/tasks/**")
                         .authenticated()
 
-                        .requestMatchers("/subtasks").hasAnyRole("TL", "SUPERVISOR")
-                        .requestMatchers("/subtasks/dev/**").authenticated()
+                        .requestMatchers("/subtasks").hasRole("TL")
+                        .requestMatchers("/subtasks/dev/**").hasRole("DEVELOPER")
                         .requestMatchers("/subtasks/*/status").hasRole("DEVELOPER")
                         .requestMatchers("/users/change-password").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/users/**")
-                        .hasAnyRole("SUPERVISOR", "TL")
+                        .hasAnyRole("SUPER_ADMIN", "COMPANY_ADMIN")
                         .requestMatchers(HttpMethod.GET, "/users")
-                        .hasAnyRole("SUPERVISOR", "TL")
+                        .hasAnyRole("SUPER_ADMIN", "COMPANY_ADMIN")
                         .anyRequest().authenticated()
                 )
 

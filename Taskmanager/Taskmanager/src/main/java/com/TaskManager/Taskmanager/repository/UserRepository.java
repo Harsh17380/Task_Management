@@ -15,35 +15,61 @@ public class UserRepository {
     private JdbcTemplate jdbcTemplate;
 
     public int save(User user) {
-        String sql = "INSERT INTO users (name, email, password, role, status) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO users (name, email, password, role, status, company_id) VALUES (?, ?, ?, ?, ?, ?)";
         return jdbcTemplate.update(sql,
                 user.getName(),
                 user.getEmail(),
                 user.getPassword(),
                 user.getRole(),
-                true);
+                true,
+                user.getCompanyId());
+    }
+
+    public List<User> findByRoleAndCompany(String role, int companyId) {
+        String sql = """
+                SELECT u.*, c.name AS company_name
+                FROM users u
+                JOIN companies c ON u.company_id = c.id
+                WHERE u.role = ? AND u.company_id = ? AND u.status = true AND c.status = true
+                """;
+        return jdbcTemplate.query(sql, (rs, rowNum) -> mapUser(rs), role, companyId);
     }
 
     public List<User> findByRole(String role) {
-        String sql = "SELECT * FROM users WHERE role = ? AND status = true";
+        String sql = """
+                SELECT u.*, c.name AS company_name
+                FROM users u
+                LEFT JOIN companies c ON u.company_id = c.id
+                WHERE u.role = ? AND u.status = true
+                """;
         return jdbcTemplate.query(sql, (rs, rowNum) -> mapUser(rs), role);
     }
 
-    public boolean existsByIdAndRole(int id, String role) {
-        String sql = "SELECT COUNT(*) FROM users WHERE id = ? AND role = ? AND status = true";
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id, role);
+    public boolean existsByIdAndRoleAndCompany(int id, String role, int companyId) {
+        String sql = "SELECT COUNT(*) FROM users WHERE id = ? AND role = ? AND company_id = ? AND status = true";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id, role, companyId);
         return count != null && count > 0;
     }
 
     public Optional<User> findByEmailAndPassword(String email, String password) {
-        String sql = "SELECT * FROM users WHERE email = ? AND password = ? AND status = true";
+        String sql = """
+                SELECT u.*, c.name AS company_name
+                FROM users u
+                LEFT JOIN companies c ON u.company_id = c.id
+                WHERE u.email = ? AND u.password = ? AND u.status = true
+                """;
         List<User> users = jdbcTemplate.query(sql, (rs, rowNum) -> mapUser(rs), email, password);
 
         return users.stream().findFirst();
     }
 
     public Optional<User> findByEmail(String email) {
-        String sql = "SELECT * FROM users WHERE email = ?";
+        String sql = """
+                SELECT u.*, c.name AS company_name
+                FROM users u
+                LEFT JOIN companies c ON u.company_id = c.id
+                WHERE LOWER(u.email) = LOWER(?)
+                """;
         List<User> users = jdbcTemplate.query(sql, (rs, rowNum) -> mapUser(rs), email);
 
         return users.stream().findFirst();
@@ -58,7 +84,12 @@ public class UserRepository {
 
     public Optional<User> findById(int id) {
 
-        String sql = "SELECT * FROM users WHERE id = ?";
+        String sql = """
+                SELECT u.*, c.name AS company_name
+                FROM users u
+                LEFT JOIN companies c ON u.company_id = c.id
+                WHERE u.id = ?
+                """;
 
         List<User> users = jdbcTemplate.query(sql, (rs, rowNum) -> mapUser(rs), id);
 
@@ -72,9 +103,25 @@ public class UserRepository {
     }
 
     public List<User> findAll() {
-        String sql = "SELECT * FROM users";
+        String sql = """
+                SELECT u.*, c.name AS company_name
+                FROM users u
+                LEFT JOIN companies c ON u.company_id = c.id
+                ORDER BY c.name NULLS FIRST, u.id
+                """;
 
         return jdbcTemplate.query(sql, (rs, rowNum) -> mapUser(rs));
+    }
+
+    public List<User> findAllByCompany(int companyId) {
+        String sql = """
+                SELECT u.*, c.name AS company_name
+                FROM users u
+                JOIN companies c ON u.company_id = c.id
+                WHERE u.company_id = ?
+                ORDER BY u.id
+                """;
+        return jdbcTemplate.query(sql, (rs, rowNum) -> mapUser(rs), companyId);
     }
 
     public String findNameById(int id) {
@@ -91,6 +138,9 @@ public class UserRepository {
         user.setPassword(rs.getString("password"));
         user.setRole(rs.getString("role"));
         user.setStatus(rs.getBoolean("status"));
+        Object companyId = rs.getObject("company_id");
+        user.setCompanyId(companyId == null ? null : ((Number) companyId).intValue());
+        user.setCompanyName(rs.getString("company_name"));
         return user;
     }
 }
