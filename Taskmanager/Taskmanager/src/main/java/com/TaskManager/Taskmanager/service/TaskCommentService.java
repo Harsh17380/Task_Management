@@ -6,6 +6,7 @@ import com.TaskManager.Taskmanager.model.TaskComment;
 import com.TaskManager.Taskmanager.repository.SubTaskRepository;
 import com.TaskManager.Taskmanager.repository.TaskCommentRepository;
 import com.TaskManager.Taskmanager.repository.TaskRepository;
+import com.TaskManager.Taskmanager.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +23,12 @@ public class TaskCommentService {
 
     @Autowired
     private SubTaskRepository subTaskRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private NotificationService notificationService;
 
     public ApiResponse<Void> addComment(
             int taskId,
@@ -45,6 +52,32 @@ public class TaskCommentService {
         comment.setComment(dto.getComment().trim());
 
         repository.save(comment);
+
+        // Notify the other parties on the task — never notify the commenter themselves
+        String commenterName = userRepository.findNameById(userId);
+        Integer companyId = taskRepository.findCompanyIdByTaskId(taskId);
+        if ("SUPERVISOR".equals(role)) {
+            // Notify the TL assigned to this task
+            Integer tlId = taskRepository.findAssignedToByTaskId(taskId);
+            if (tlId != null && tlId != userId) {
+                notificationService.push(tlId, companyId, "NEW_COMMENT",
+                        commenterName + " commented on task #" + taskId, taskId);
+            }
+        } else if ("TL".equals(role)) {
+            // Notify the supervisor who created this task
+            Integer supervisorId = taskRepository.findCreatedByTaskId(taskId);
+            if (supervisorId != null && supervisorId != userId) {
+                notificationService.push(supervisorId, companyId, "NEW_COMMENT",
+                        commenterName + " commented on task #" + taskId, taskId);
+            }
+        } else if ("DEVELOPER".equals(role)) {
+            // Notify the TL who owns the task
+            Integer tlId = taskRepository.findAssignedToByTaskId(taskId);
+            if (tlId != null && tlId != userId) {
+                notificationService.push(tlId, companyId, "NEW_COMMENT",
+                        commenterName + " commented on task #" + taskId, taskId);
+            }
+        }
 
         return new ApiResponse<>(true, "Comment added successfully");
     }

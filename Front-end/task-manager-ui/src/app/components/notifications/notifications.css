@@ -1,0 +1,211 @@
+.notification-wrapper {
+  position: relative;
+}
+
+/* ── Bell button ───────────────────────────────────────────────── */
+.bell-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  padding: 0;
+  color: #374151;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.bell-btn:hover {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.bell-btn.has-unread {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.bell-icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* ── Unread badge ──────────────────────────────────────────────── */
+.badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  padding: 0 4px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}
+
+/* ── Dropdown panel ────────────────────────────────────────────── */
+.notif-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 100;
+  width: min(420px, calc(100vw - 32px));
+  max-height: 460px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.12);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.panel-header h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.notif-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  overflow: hidden;
+  border-bottom: 1px solid #f3f4f6;
+  padding: 10px 12px;
+}
+
+.notif-filter button {
+  flex: 0 0 auto;
+  border: 1px solid #d1d5db;
+  border-radius: 999px;
+  background: #fff;
+  color: #374151;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 10px;
+}
+
+.notif-filter button.active {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.mark-all-btn {
+  border: 0;
+  background: transparent;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+}
+
+.mark-all-btn:hover {
+  text-decoration: underline;
+}
+
+.empty-state {
+  padding: 24px 16px;
+  margin: 0;
+  color: #6b7280;
+  font-size: 13px;
+  text-align: center;
+}
+
+/* ── Notification list ─────────────────────────────────────────── */
+.notif-list {
+  overflow-y: auto;
+  flex: 1;
+  margin: 0;
+  padding: 6px 0;
+  list-style: none;
+}
+
+.notif-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background 0.25s ease;
+  background: #fff;
+}
+
+/* Read items: plain white, subtle hover so they feel clickable but don't look unread */
+.notif-item:not(.unread):hover {
+  background: #f9fafb;
+}
+
+/* Unread items: blue tint */
+.notif-item.unread {
+  background: #eff6ff;
+}
+
+.notif-item.unread:hover {
+  background: #dbeafe;
+}
+
+.notif-icon {
+  flex-shrink: 0;
+  min-width: 46px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  color: #374151;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 20px;
+  text-align: center;
+}
+
+.notif-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.notif-msg {
+  margin: 0 0 3px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #111827;
+}
+
+.notif-time {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.unread-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2563eb;
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+
+/* ── Responsive ────────────────────────────────────────────────── */
+@media (max-width: 400px) {
+  .notif-panel {
+    width: calc(100vw - 32px);
+    right: 0;
+  }
+}

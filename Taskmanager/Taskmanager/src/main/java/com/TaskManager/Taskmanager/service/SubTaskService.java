@@ -27,6 +27,9 @@ public class SubTaskService {
     @Autowired
     private TaskCommentRepository taskCommentRepository;
 
+    @Autowired
+    private NotificationService notificationService;
+
     public ApiResponse<Void> createSubTask(SubTaskRequestDTO dto, int actorUserId, Integer companyId) {
 
         if (dto.getTaskId() <= 0) {
@@ -66,6 +69,14 @@ public class SubTaskService {
                 actorUserId,
                 "Subtask \"" + subTask.getTitle() + "\" assigned to " + developerName
         );
+        // Notify the assigned developer
+        notificationService.push(
+                dto.getAssignedTo(),
+                companyId,
+                "SUBTASK_ASSIGNED",
+                "New subtask assigned to you: \"" + subTask.getTitle() + "\"",
+                dto.getTaskId()
+        );
         updateParentTaskStatus(dto.getTaskId(), actorUserId);
         return new ApiResponse<>(true, "Subtask created and assigned to Developer");
     }
@@ -101,12 +112,24 @@ public class SubTaskService {
 
         subTaskRepository.updateStatus(subTaskId, normalizedStatus);
         if (previousStatus == null || !previousStatus.equals(normalizedStatus)) {
+            Integer companyId = taskRepository.findCompanyIdByTaskId(taskId);
             taskCommentRepository.saveActivity(
                     taskId,
                     actorUserId,
                     "Subtask \"" + subTaskTitle + "\" status changed from "
                             + displayStatus(previousStatus) + " to " + displayStatus(normalizedStatus)
             );
+            // Notify the TL who owns the parent task
+            Integer tlId = taskRepository.findAssignedToByTaskId(taskId);
+            if (tlId != null && tlId != actorUserId) {
+                notificationService.push(
+                        tlId,
+                        companyId,
+                        "SUBTASK_STATUS",
+                        "Subtask \"" + subTaskTitle + "\" is now " + displayStatus(normalizedStatus),
+                        taskId
+                );
+            }
         }
         updateParentTaskStatus(taskId, actorUserId);
 
@@ -136,12 +159,24 @@ public class SubTaskService {
         taskRepository.updateTaskStatus(taskId, nextTaskStatus);
 
         if (previousTaskStatus != null && !previousTaskStatus.equals(nextTaskStatus)) {
+            Integer companyId = taskRepository.findCompanyIdByTaskId(taskId);
             taskCommentRepository.saveActivity(
                     taskId,
                     actorUserId,
                     "Task status changed from "
                             + displayStatus(previousTaskStatus) + " to " + displayStatus(nextTaskStatus)
             );
+            // Notify the Supervisor who created the task — but never notify the actor themselves
+            Integer supervisorId = taskRepository.findCreatedByTaskId(taskId);
+            if (supervisorId != null && supervisorId != actorUserId) {
+                notificationService.push(
+                        supervisorId,
+                        companyId,
+                        "TASK_STATUS",
+                        "Task #" + taskId + " is now " + displayStatus(nextTaskStatus),
+                        taskId
+                );
+            }
         }
     }
 

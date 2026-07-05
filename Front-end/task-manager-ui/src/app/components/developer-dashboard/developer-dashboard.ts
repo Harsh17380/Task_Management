@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnInit, SimpleChanges, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { ApiService } from '../../services/api.service';
+import { CommentBadgeService } from '../../services/comment-badge.service';
 
 @Component({
   selector: 'app-developer-dashboard',
@@ -11,9 +12,10 @@ import { ApiService } from '../../services/api.service';
   templateUrl: './developer-dashboard.html',
   styleUrl: './developer-dashboard.css'
 })
-export class DeveloperDashboardComponent implements OnInit {
+export class DeveloperDashboardComponent implements OnInit, OnChanges {
 
   @Input() currentUser: any = null;
+  @ViewChild('commentList') commentList?: ElementRef<HTMLElement>;
 
   selectedDeveloperId = '';
   developers: any[] = [];
@@ -28,13 +30,30 @@ export class DeveloperDashboardComponent implements OnInit {
   isLoadingComments = false;
   isAddingComment = false;
   commentMessage = '';
+  private initializedForUserId: number | null = null;
 
   constructor(
     private api: ApiService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    public commentBadge: CommentBadgeService,
   ) {}
 
   ngOnInit() {
+    this.initializeDashboard();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['currentUser']) {
+      this.initializeDashboard();
+    }
+  }
+
+  private initializeDashboard() {
+    if (!this.currentUser?.id || this.initializedForUserId === this.currentUser.id) {
+      return;
+    }
+
+    this.initializedForUserId = this.currentUser.id;
     if (this.currentUser?.role === 'DEVELOPER') {
       this.developers = [this.currentUser];
       this.selectedDeveloperId = String(this.currentUser.id);
@@ -71,6 +90,9 @@ export class DeveloperDashboardComponent implements OnInit {
       next: (res: any) => {
         this.subTasks = res;
         this.message = '';
+        // Load comment badges for all unique task IDs
+        const taskIds = [...new Set(res.map((s: any) => s.taskId as number))] as number[];
+        this.commentBadge.loadBadges(taskIds);
       },
       error: (err) => {
         console.error('Error loading subtasks:', err);
@@ -152,6 +174,10 @@ export class DeveloperDashboardComponent implements OnInit {
     return Math.round((this.countByPriority(priority) / this.subTasks.length) * 100);
   }
 
+  get priorityLevels() {
+    return ['URGENT', 'HIGH', 'MEDIUM', 'LOW'];
+  }
+
   get filteredSubTasks() {
     const search = this.searchTerm.trim().toLowerCase();
 
@@ -176,6 +202,8 @@ export class DeveloperDashboardComponent implements OnInit {
     this.openedTaskId = taskId;
     this.newComment = '';
     this.commentMessage = '';
+    // Mark as seen — clears the badge for this task
+    this.commentBadge.markSeen(taskId);
     this.loadComments(taskId);
   }
 
@@ -193,6 +221,7 @@ export class DeveloperDashboardComponent implements OnInit {
         this.taskComments = comments;
         this.isLoadingComments = false;
         this.cdr.detectChanges();
+        this.scrollCommentsToBottom();
       },
       error: (err) => {
         console.error('Error loading comments:', err);
@@ -227,6 +256,22 @@ export class DeveloperDashboardComponent implements OnInit {
         this.commentMessage = err?.error?.message || 'Could not add comment.';
         this.isAddingComment = false;
         this.cdr.detectChanges();
+      }
+    });
+  }
+
+  submitCommentOnEnter(event: Event) {
+    const keyboardEvent = event as KeyboardEvent;
+    if (keyboardEvent.shiftKey) return;
+    keyboardEvent.preventDefault();
+    this.addComment();
+  }
+
+  private scrollCommentsToBottom() {
+    setTimeout(() => {
+      const element = this.commentList?.nativeElement;
+      if (element) {
+        element.scrollTop = element.scrollHeight;
       }
     });
   }

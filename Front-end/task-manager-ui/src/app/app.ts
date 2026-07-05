@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { DeveloperDashboardComponent } from './components/developer-dashboard/developer-dashboard';
 import { LoginComponent } from './components/login/login';
+import { NotificationsComponent } from './components/notifications/notifications';
 import { RegisterComponent } from './components/register/register.component';
 import { SupervisorDashboardComponent } from './components/supervisor-dashboard/supervisor-dashboard';
 import { TaskCreateComponent } from './components/task-create/task-create';
@@ -10,6 +11,8 @@ import { AuthService } from './services/auth.service';
 import { ChangePasswordComponent } from './components/change-password/change-password';
 import { UserManagementComponent } from './components/user-management/user-management';
 import { ApiService } from './services/api.service';
+import { NotificationService } from './services/notification.service';
+import { CommentBadgeService } from './services/comment-badge.service';
 
 type ActiveView =
   | 'register'
@@ -33,6 +36,7 @@ type ActiveView =
     DeveloperDashboardComponent,
     ChangePasswordComponent,
     UserManagementComponent,
+    NotificationsComponent,
   ],
   templateUrl: './app.html',
   styleUrl: './app.css'
@@ -44,11 +48,14 @@ export class App {
   constructor(
     private authService: AuthService,
     private api: ApiService,
+    private notifService: NotificationService,
+    private commentBadge: CommentBadgeService,
   ) {
-    // Restore session on app load — validates token expiry too
     if (authService.isLoggedIn()) {
       this.currentUser = authService.getUser();
       this.activeView = this.getDefaultView(this.currentUser?.role);
+      this.notifService.startPolling();
+      this.commentBadge.init(this.currentUser?.id);
     }
   }
 
@@ -56,11 +63,15 @@ export class App {
     this.api.clearUserCache();
     this.currentUser = user;
     this.activeView = this.getDefaultView(user.role);
+    this.notifService.startPolling();
+    this.commentBadge.init(user.id);
   }
 
   logout() {
     this.authService.logout();
     this.api.clearUserCache();
+    this.notifService.stopPolling();
+    this.commentBadge.reset();
     this.currentUser = null;
     this.activeView = 'tl-dashboard';
   }

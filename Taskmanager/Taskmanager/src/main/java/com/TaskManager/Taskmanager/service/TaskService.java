@@ -24,6 +24,9 @@ public class TaskService {
     @Autowired
     private TaskCommentRepository taskCommentRepository;
 
+    @Autowired
+    private NotificationService notificationService;
+
     private static final List<String> ALLOWED_PRIORITIES =
             List.of("LOW", "MEDIUM", "HIGH", "URGENT");
 
@@ -67,6 +70,14 @@ public class TaskService {
                     taskId,
                     actorUserId,
                     "Task created and assigned to " + tlName
+            );
+            // Notify the assigned TL
+            notificationService.push(
+                    dto.getAssignedTo(),
+                    companyId,
+                    "TASK_ASSIGNED",
+                    "New task assigned to you: \"" + task.getTitle() + "\"",
+                    taskId
             );
         }
         return new ApiResponse<>(true, "Task created and assigned to TL");

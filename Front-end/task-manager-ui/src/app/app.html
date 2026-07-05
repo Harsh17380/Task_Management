@@ -11,7 +11,10 @@
       <span>{{ currentUser.name }}</span>
       <small>{{ currentUser.email }}</small>
       <small *ngIf="currentUser.companyName">{{ currentUser.companyName }}</small>
-      <button type="button" (click)="logout()">Logout</button>
+      <div class="header-actions">
+        <app-notifications></app-notifications>
+        <button type="button" (click)="logout()">Logout</button>
+      </div>
     </div>
   </header>
 

@@ -17,6 +17,12 @@
   gap: 16px;
 }
 
+.subtask-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
 .eyebrow,
 .panel-header span,
 .developer-selector,
@@ -182,6 +188,9 @@ button:disabled {
 .comment-dialog {
   width: min(100%, 560px);
   max-height: calc(100vh - 80px);
+  height: min(640px, calc(100vh - 80px));
+  display: flex;
+  flex-direction: column;
   overflow-y: auto;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
@@ -190,16 +199,22 @@ button:disabled {
 }
 
 .detail-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
   display: flex;
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 14px;
+  background: #fff;
+  padding-bottom: 10px;
 }
 
 .comment-list {
   display: grid;
   gap: 10px;
-  max-height: 280px;
+  min-height: 0;
+  max-height: 360px;
   overflow-y: auto;
   margin: 0 0 14px;
   padding: 0;
@@ -207,9 +222,12 @@ button:disabled {
 }
 
 .comment-item {
+  display: grid;
+  gap: 8px;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
-  padding: 10px;
+  background: #fff;
+  padding: 12px;
 }
 
 .comment-item.activity {
@@ -219,14 +237,28 @@ button:disabled {
 
 .comment-meta {
   display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: 10px;
   color: #6b7280;
   font-size: 12px;
 }
 
+.comment-meta strong {
+  min-width: 120px;
+}
+
+.comment-meta span {
+  margin-left: auto;
+  text-align: right;
+}
+
 .comment-item p {
-  margin: 8px 0 0;
+  margin: 0;
+  color: #1f2937;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
 .comment-form {
@@ -236,11 +268,18 @@ button:disabled {
   gap: 10px;
   border-top: 1px solid #e5e7eb;
   background: #fff;
-  padding-top: 12px;
+  padding: 12px 0 0;
+}
+
+.comment-form textarea {
+  min-height: 84px;
+  max-height: 140px;
+  resize: vertical;
 }
 
 .comment-form button {
   justify-self: end;
+  min-width: 140px;
 }
 
 @media (max-width: 760px) {

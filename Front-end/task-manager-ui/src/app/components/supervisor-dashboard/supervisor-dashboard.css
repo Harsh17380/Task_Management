@@ -129,6 +129,14 @@ textarea {
   gap: 8px;
 }
 
+.tile-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  margin-top: 2px;
+}
+
 .task-title {
   display: block;
   font-weight: 700;
@@ -192,6 +200,13 @@ textarea {
   text-align: left;
 }
 
+.link-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.2;
+}
+
 .detail-backdrop {
   position: fixed;
   inset: 0;
@@ -212,11 +227,22 @@ textarea {
   padding: 22px;
 }
 
+.task-detail.comments-only {
+  display: flex;
+  flex-direction: column;
+  height: min(720px, calc(100vh - 80px));
+}
+
 .detail-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
   display: flex;
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 14px;
+  background: #fff;
+  padding-bottom: 10px;
 }
 
 .detail-description {
@@ -254,6 +280,12 @@ dd {
   padding-top: 16px;
 }
 
+.comments-only .comments-panel {
+  flex: 1;
+  min-height: 0;
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+}
+
 h4 {
   margin: 0 0 12px;
 }
@@ -261,17 +293,24 @@ h4 {
 .comment-list {
   display: grid;
   gap: 10px;
-  max-height: 240px;
+  max-height: 340px;
   overflow-y: auto;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
+.comments-only .comment-list {
+  max-height: none;
+}
+
 .comment-item {
+  display: grid;
+  gap: 8px;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
-  padding: 10px;
+  background: #fff;
+  padding: 12px;
 }
 
 .comment-item.activity {
@@ -281,14 +320,28 @@ h4 {
 
 .comment-meta {
   display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: 10px;
   color: #6b7280;
   font-size: 12px;
 }
 
+.comment-meta strong {
+  min-width: 120px;
+}
+
+.comment-meta span {
+  margin-left: auto;
+  text-align: right;
+}
+
 .comment-item p {
-  margin: 8px 0 0;
+  margin: 0;
+  color: #1f2937;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
 .comment-form {
@@ -298,7 +351,13 @@ h4 {
   gap: 10px;
   border-top: 1px solid #e5e7eb;
   background: #fff;
-  padding-top: 12px;
+  padding: 12px 0 0;
+}
+
+.comment-form textarea {
+  min-height: 84px;
+  max-height: 140px;
+  resize: vertical;
 }
 
 .comment-form button {
@@ -306,6 +365,7 @@ h4 {
   border-color: #2563eb;
   background: #2563eb;
   color: #fff;
+  min-width: 140px;
 }
 
 @media (max-width: 760px) {

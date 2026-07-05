@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnInit, SimpleChanges, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { ApiService } from '../../services/api.service';
+import { CommentBadgeService } from '../../services/comment-badge.service';
 
 @Component({
   selector: 'app-tl-dashboard',
@@ -11,9 +12,10 @@ import { ApiService } from '../../services/api.service';
   templateUrl: './tl-dashboard.html',
   styleUrl: './tl-dashboard.css'
 })
-export class TlDashboardComponent implements OnInit {
+export class TlDashboardComponent implements OnInit, OnChanges {
 
   @Input() currentUser: any = null;
+  @ViewChild('commentList') commentList?: ElementRef<HTMLElement>;
 
   selectedTlId = '';
   teamLeads: any[] = [];
@@ -26,11 +28,13 @@ export class TlDashboardComponent implements OnInit {
   statusFilter = '';
   priorityFilter = '';
   openedTask: any = null;
+  detailMode: 'details' | 'comments' = 'details';
   taskComments: any[] = [];
   newComment = '';
   isLoadingComments = false;
   isAddingComment = false;
   commentMessage = '';
+  private initializedForUserId: number | null = null;
 
   subTask = {
     taskId: 0,
@@ -41,10 +45,26 @@ export class TlDashboardComponent implements OnInit {
 
   constructor(
     private api: ApiService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    public commentBadge: CommentBadgeService,
   ) {}
 
   ngOnInit() {
+    this.initializeDashboard();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['currentUser']) {
+      this.initializeDashboard();
+    }
+  }
+
+  private initializeDashboard() {
+    if (!this.currentUser?.id || this.initializedForUserId === this.currentUser.id) {
+      return;
+    }
+
+    this.initializedForUserId = this.currentUser.id;
     if (this.currentUser?.role === 'TL') {
       this.teamLeads = [this.currentUser];
       this.selectedTlId = String(this.currentUser.id);
@@ -85,6 +105,9 @@ export class TlDashboardComponent implements OnInit {
       next: (res: any) => {
         this.tasks = res;
         this.resetSubTaskForm();
+        // Load comment badges for all tasks
+        const taskIds = res.map((t: any) => t.id as number);
+        this.commentBadge.loadBadges(taskIds);
       },
       error: (err) => {
         console.error('Error loading tasks:', err);
@@ -180,17 +203,27 @@ export class TlDashboardComponent implements OnInit {
     return `priority-${(priority || 'MEDIUM').toLowerCase()}`;
   }
 
+  get priorityLevels() {
+    return ['URGENT', 'HIGH', 'MEDIUM', 'LOW'];
+  }
+
   private todayIso() {
     const now = new Date();
     const offsetDate = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
     return offsetDate.toISOString().slice(0, 10);
   }
 
-  openTask(task: any) {
+  openTask(task: any, mode: 'details' | 'comments' = 'details') {
     this.openedTask = task;
+    this.detailMode = mode;
     this.newComment = '';
     this.commentMessage = '';
-    this.loadComments(task.id);
+    if (mode === 'comments') {
+      this.commentBadge.markSeen(task.id);
+      this.loadComments(task.id);
+    } else {
+      this.taskComments = [];
+    }
   }
 
   closeTask() {
@@ -207,6 +240,7 @@ export class TlDashboardComponent implements OnInit {
         this.taskComments = comments;
         this.isLoadingComments = false;
         this.cdr.detectChanges();
+        this.scrollCommentsToBottom();
       },
       error: (err) => {
         console.error('Error loading comments:', err);
@@ -241,6 +275,22 @@ export class TlDashboardComponent implements OnInit {
         this.commentMessage = err?.error?.message || 'Could not add comment.';
         this.isAddingComment = false;
         this.cdr.detectChanges();
+      }
+    });
+  }
+
+  submitCommentOnEnter(event: Event) {
+    const keyboardEvent = event as KeyboardEvent;
+    if (keyboardEvent.shiftKey) return;
+    keyboardEvent.preventDefault();
+    this.addComment();
+  }
+
+  private scrollCommentsToBottom() {
+    setTimeout(() => {
+      const element = this.commentList?.nativeElement;
+      if (element) {
+        element.scrollTop = element.scrollHeight;
       }
     });
   }

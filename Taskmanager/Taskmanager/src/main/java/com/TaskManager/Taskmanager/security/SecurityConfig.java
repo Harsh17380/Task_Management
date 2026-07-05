@@ -98,6 +98,7 @@ public class SecurityConfig {
                         .hasAnyRole("SUPER_ADMIN", "COMPANY_ADMIN")
                         .requestMatchers(HttpMethod.GET, "/users")
                         .hasAnyRole("SUPER_ADMIN", "COMPANY_ADMIN")
+                        .requestMatchers("/notifications/**").authenticated()
                         .anyRequest().authenticated()
                 )
 

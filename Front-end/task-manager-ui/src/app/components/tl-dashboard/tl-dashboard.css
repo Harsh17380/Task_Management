@@ -129,8 +129,18 @@ h3 {
 .tile-actions {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 8px;
+}
+
+.tile-header {
+  justify-content: space-between;
+}
+
+.tile-actions {
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  justify-content: flex-start;
+  margin-top: 2px;
 }
 
 .task-title,
@@ -236,6 +246,13 @@ button[type='submit']:disabled {
   padding: 0;
 }
 
+.link-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.2;
+}
+
 .select-button {
   border: 1px solid #2563eb;
   border-radius: 6px;
@@ -266,11 +283,22 @@ button[type='submit']:disabled {
   padding: 22px;
 }
 
+.task-detail.comments-only {
+  display: flex;
+  flex-direction: column;
+  height: min(720px, calc(100vh - 80px));
+}
+
 .detail-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
   display: flex;
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 14px;
+  background: #fff;
+  padding-bottom: 10px;
 }
 
 .detail-grid {
@@ -293,8 +321,14 @@ dd {
 .comments-panel {
   display: grid;
   gap: 12px;
+  min-height: 0;
   border-top: 1px solid #e5e7eb;
   padding-top: 16px;
+}
+
+.comments-only .comments-panel {
+  flex: 1;
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
 }
 
 h4 {
@@ -304,18 +338,55 @@ h4 {
 .comment-list {
   display: grid;
   gap: 10px;
-  max-height: 240px;
+  max-height: 340px;
   overflow-y: auto;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
+.comments-only .comment-list {
+  max-height: none;
+}
+
+.comment-item {
+  display: grid;
+  gap: 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  padding: 12px;
+}
+
+.comment-item.activity {
+  border-left: 4px solid #2563eb;
+  background: #eff6ff;
+}
+
 .comment-meta {
   display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
   justify-content: space-between;
+  gap: 10px;
   color: #6b7280;
   font-size: 12px;
+}
+
+.comment-meta strong {
+  min-width: 120px;
+}
+
+.comment-meta span {
+  margin-left: auto;
+  text-align: right;
+}
+
+.comment-item p {
+  margin: 0;
+  color: #1f2937;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
 .comment-form {
@@ -325,7 +396,18 @@ h4 {
   gap: 10px;
   border-top: 1px solid #e5e7eb;
   background: #fff;
-  padding-top: 12px;
+  padding: 12px 0 0;
+}
+
+.comment-form textarea {
+  min-height: 84px;
+  max-height: 140px;
+  resize: vertical;
+}
+
+.comment-form button {
+  justify-self: end;
+  min-width: 140px;
 }
 
 .detail-select {

@@ -101,6 +101,24 @@ public class TaskRepository {
         }, supervisorId, companyId);
     }
 
+    public Integer findAssignedToByTaskId(int taskId) {
+        String sql = "SELECT assigned_to FROM tasks WHERE id = ?";
+        List<Integer> result = jdbcTemplate.query(sql, (rs, rowNum) -> rs.getInt("assigned_to"), taskId);
+        return result.isEmpty() ? null : result.get(0);
+    }
+
+    public Integer findCreatedByTaskId(int taskId) {
+        String sql = "SELECT created_by FROM tasks WHERE id = ?";
+        List<Integer> result = jdbcTemplate.query(sql, (rs, rowNum) -> rs.getInt("created_by"), taskId);
+        return result.isEmpty() ? null : result.get(0);
+    }
+
+    public Integer findCompanyIdByTaskId(int taskId) {
+        String sql = "SELECT company_id FROM tasks WHERE id = ?";
+        List<Integer> result = jdbcTemplate.query(sql, (rs, rowNum) -> rs.getInt("company_id"), taskId);
+        return result.isEmpty() ? null : result.get(0);
+    }
+
     private Task mapTask(java.sql.ResultSet rs) throws java.sql.SQLException {
         Task task = new Task();
         task.setId(rs.getInt("id"));

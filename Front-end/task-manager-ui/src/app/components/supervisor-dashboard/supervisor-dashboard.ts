@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnInit, SimpleChanges, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
-
+import { CommentBadgeService } from '../../services/comment-badge.service';
 
 @Component({
   selector: 'app-supervisor-dashboard',
@@ -11,9 +11,10 @@ import { ApiService } from '../../services/api.service';
   templateUrl: './supervisor-dashboard.html',
   styleUrl: './supervisor-dashboard.css'
 })
-export class SupervisorDashboardComponent implements OnInit {
+export class SupervisorDashboardComponent implements OnInit, OnChanges {
 
   @Input() currentUser: any = null;
+  @ViewChild('commentList') commentList?: ElementRef<HTMLElement>;
 
   tasks: any[] = [];
   message = '';
@@ -22,18 +23,36 @@ export class SupervisorDashboardComponent implements OnInit {
   statusFilter = '';
   priorityFilter = '';
   openedTask: any = null;
+  detailMode: 'details' | 'comments' = 'details';
   taskComments: any[] = [];
   newComment = '';
   isLoadingComments = false;
   isAddingComment = false;
   commentMessage = '';
+  private initializedForUserId: number | null = null;
 
   constructor(
     private api: ApiService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    public commentBadge: CommentBadgeService,
   ) {}
 
   ngOnInit() {
+    this.initializeDashboard();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['currentUser']) {
+      this.initializeDashboard();
+    }
+  }
+
+  private initializeDashboard() {
+    if (!this.currentUser?.id || this.initializedForUserId === this.currentUser.id) {
+      return;
+    }
+
+    this.initializedForUserId = this.currentUser.id;
     this.loadTasks();
   }
 
@@ -52,6 +71,9 @@ export class SupervisorDashboardComponent implements OnInit {
         this.tasks = res;
         this.message = '';
         this.isLoading = false;
+        // Load comment badges for all tasks
+        const taskIds = res.map((t: any) => t.id as number);
+        this.commentBadge.loadBadges(taskIds);
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -116,17 +138,27 @@ export class SupervisorDashboardComponent implements OnInit {
     return `priority-${(priority || 'MEDIUM').toLowerCase()}`;
   }
 
+  get priorityLevels() {
+    return ['URGENT', 'HIGH', 'MEDIUM', 'LOW'];
+  }
+
   private todayIso() {
     const now = new Date();
     const offsetDate = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
     return offsetDate.toISOString().slice(0, 10);
   }
 
-  openTask(task: any) {
+  openTask(task: any, mode: 'details' | 'comments' = 'details') {
     this.openedTask = task;
+    this.detailMode = mode;
     this.newComment = '';
     this.commentMessage = '';
-    this.loadComments(task.id);
+    if (mode === 'comments') {
+      this.commentBadge.markSeen(task.id);
+      this.loadComments(task.id);
+    } else {
+      this.taskComments = [];
+    }
   }
 
   closeTask() {
@@ -143,6 +175,7 @@ export class SupervisorDashboardComponent implements OnInit {
         this.taskComments = comments;
         this.isLoadingComments = false;
         this.cdr.detectChanges();
+        this.scrollCommentsToBottom();
       },
       error: (err) => {
         console.error('Error loading comments:', err);
@@ -177,6 +210,22 @@ export class SupervisorDashboardComponent implements OnInit {
         this.commentMessage = err?.error?.message || 'Could not add comment.';
         this.isAddingComment = false;
         this.cdr.detectChanges();
+      }
+    });
+  }
+
+  submitCommentOnEnter(event: Event) {
+    const keyboardEvent = event as KeyboardEvent;
+    if (keyboardEvent.shiftKey) return;
+    keyboardEvent.preventDefault();
+    this.addComment();
+  }
+
+  private scrollCommentsToBottom() {
+    setTimeout(() => {
+      const element = this.commentList?.nativeElement;
+      if (element) {
+        element.scrollTop = element.scrollHeight;
       }
     });
   }

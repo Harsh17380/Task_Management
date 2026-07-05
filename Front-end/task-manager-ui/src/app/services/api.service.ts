@@ -126,4 +126,36 @@ export class ApiService {
       .post<ApiResponse<any>>(`${this.baseUrl}/users/change-password`, data)
       .pipe(timeout(this.requestTimeoutMs));
   }
+
+  // ── Notifications ─────────────────────────────────────────────
+
+  getNotifications() {
+    return this.http
+      .get<ApiResponse<any[]>>(`${this.baseUrl}/notifications`)
+      .pipe(
+        timeout(this.requestTimeoutMs),
+        map((res) => res.data || []),
+      );
+  }
+
+  getUnreadNotificationCount() {
+    return this.http
+      .get<ApiResponse<number>>(`${this.baseUrl}/notifications/unread-count`)
+      .pipe(
+        timeout(this.requestTimeoutMs),
+        map((res) => res.data ?? 0),
+      );
+  }
+
+  markNotificationRead(notificationId: number) {
+    return this.http
+      .put<ApiResponse<void>>(`${this.baseUrl}/notifications/${notificationId}/read`, {})
+      .pipe(timeout(this.requestTimeoutMs));
+  }
+
+  markAllNotificationsRead() {
+    return this.http
+      .put<ApiResponse<void>>(`${this.baseUrl}/notifications/read-all`, {})
+      .pipe(timeout(this.requestTimeoutMs));
+  }
 }

@@ -83,6 +83,13 @@ h1 {
   font-weight: 700;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
 @media (max-width: 760px) {
   .app-header {
     flex-direction: column;
