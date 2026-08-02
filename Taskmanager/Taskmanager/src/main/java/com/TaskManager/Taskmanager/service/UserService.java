@@ -6,6 +6,8 @@ import com.TaskManager.Taskmanager.model.User;
 import com.TaskManager.Taskmanager.repository.CompanyRepository;
 import com.TaskManager.Taskmanager.repository.UserRepository;
 import com.TaskManager.Taskmanager.security.JwtUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.MailException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,6 +20,8 @@ import java.util.Optional;
 
 @Service
 public class UserService {
+
+    private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
     private static final List<String> COMPANY_ROLES =
             List.of("SUPERVISOR", "MANAGER", "TL", "DEVELOPER");
@@ -176,7 +180,8 @@ public class UserService {
             userRepository.updatePassword(user.getId(), passwordEncoder.encode(temporaryPassword));
             return new ApiResponse<>(true, "Temporary password sent to your registered email");
         } catch (MailException ex) {
-            return new ApiResponse<>(false, "Could not send reset email. Check Gmail app password and SMTP access.");
+            log.error("Failed to send reset email", ex);
+            return new ApiResponse<>(false, ex.getMessage());
         }
     }
 
