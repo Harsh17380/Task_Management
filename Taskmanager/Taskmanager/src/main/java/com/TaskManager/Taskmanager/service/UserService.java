@@ -9,7 +9,6 @@ import com.TaskManager.Taskmanager.security.JwtUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.MailException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -156,10 +155,11 @@ public class UserService {
 
         if (!emailService.isMailConfigured()) {
             return new ApiResponse<>(false,
-                    "Email service is not configured. Set MAIL_USERNAME and MAIL_PASSWORD, then restart backend.");
+                    "Email service is not configured. Set BREVO_API_KEY and BREVO_SENDER_EMAIL, then restart backend.");
         }
 
-        Optional<User> userOptional = userRepository.findByEmail(dto.getEmail().trim());
+        String email = dto.getEmail().trim();
+        Optional<User> userOptional = userRepository.findByEmail(email);
         if (userOptional.isEmpty()) {
             return new ApiResponse<>(false, "Email is not registered");
         }
@@ -179,9 +179,9 @@ public class UserService {
             emailService.sendEmail(user.getEmail(), "CoreQueue password reset", body);
             userRepository.updatePassword(user.getId(), passwordEncoder.encode(temporaryPassword));
             return new ApiResponse<>(true, "Temporary password sent to your registered email");
-        } catch (MailException ex) {
+        } catch (Exception ex) {
             log.error("Failed to send reset email", ex);
-            return new ApiResponse<>(false, ex.getMessage());
+            return new ApiResponse<>(false, "Could not send reset email: " + ex.getMessage());
         }
     }
 

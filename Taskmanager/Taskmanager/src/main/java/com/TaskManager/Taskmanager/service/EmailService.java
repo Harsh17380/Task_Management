@@ -1,40 +1,70 @@
 package com.TaskManager.Taskmanager.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class EmailService {
 
-    @Autowired
-    private JavaMailSender mailSender;
+    @Value("${brevo.api.key:}")
+    private String apiKey;
 
-    @Value("${spring.mail.username:}")
-    private String mailUsername;
+    @Value("${brevo.sender.email:}")
+    private String senderEmail;
 
-    @Value("${spring.mail.password:}")
-    private String mailPassword;
+    @Value("${brevo.sender.name:CoreQueue}")
+    private String senderName;
 
-    public boolean isMailConfigured() {
-        return mailUsername != null && !mailUsername.isBlank()
-                && mailPassword != null && !mailPassword.isBlank();
+    private final RestTemplate restTemplate;
+
+    public EmailService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
     }
 
-    public void sendEmail(String to,
-                          String subject,
-                          String body) {
+    public boolean isMailConfigured() {
+        return apiKey != null && !apiKey.isBlank()
+                && senderEmail != null && !senderEmail.isBlank();
+    }
 
-        SimpleMailMessage message =
-                new SimpleMailMessage();
+    public void sendEmail(String to, String subject, String body) {
 
-        message.setFrom(mailUsername);
-        message.setTo(to);
-        message.setSubject(subject);
-        message.setText(body);
+        String url = "https://api.brevo.com/v3/smtp/email";
 
-        mailSender.send(message);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("accept", "application/json");
+        headers.set("api-key", apiKey);
+
+        Map<String, Object> payload = Map.of(
+                "sender", Map.of(
+                        "name", senderName,
+                        "email", senderEmail
+                ),
+                "to", List.of(
+                        Map.of("email", to)
+                ),
+                "subject", subject,
+                "textContent", body
+        );
+
+        HttpEntity<Map<String, Object>> request =
+                new HttpEntity<>(payload, headers);
+
+        ResponseEntity<String> response;
+        try {
+            response = restTemplate.postForEntity(url, request, String.class);
+        } catch (RestClientException ex) {
+            throw new IllegalStateException("Brevo email request failed: " + ex.getMessage(), ex);
+        }
+
+        if (!response.getStatusCode().is2xxSuccessful()) {
+            throw new RuntimeException("Brevo Email Failed : " + response.getBody());
+        }
     }
 }
