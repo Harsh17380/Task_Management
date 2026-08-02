@@ -10,8 +10,12 @@ export const authInterceptor: HttpInterceptorFn = (
   const authService = inject(AuthService);
   const token = authService.getToken();
 
-  // Skip adding token for login endpoint
-  if (req.url.includes('/users/login')) {
+  // Public auth endpoints do not need a token.
+  if (
+    req.url.includes('/users/login') ||
+    req.url.includes('/users/company-signup') ||
+    req.url.includes('/users/forgot-password')
+  ) {
     return next(req);
   }
 

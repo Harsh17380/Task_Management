@@ -32,6 +32,18 @@ export class ApiService {
       .pipe(timeout(this.requestTimeoutMs));
   }
 
+  signupCompany(data: { companyName: string; name: string; email: string; password: string }) {
+    return this.http
+      .post<ApiResponse<void>>(`${this.baseUrl}/users/company-signup`, data)
+      .pipe(timeout(this.requestTimeoutMs));
+  }
+
+  forgotPassword(email: string) {
+    return this.http
+      .post<ApiResponse<void>>(`${this.baseUrl}/users/forgot-password`, { email })
+      .pipe(timeout(this.requestTimeoutMs));
+  }
+
   createUser(user: any) {
     return this.http.post(`${this.baseUrl}/users`, user).pipe(
       timeout(this.requestTimeoutMs),

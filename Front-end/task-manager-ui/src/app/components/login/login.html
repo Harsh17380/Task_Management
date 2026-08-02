@@ -1,9 +1,9 @@
 <section class="login-page">
   <div class="login-panel">
     <p class="eyebrow">Task Management System</p>
-    <h1>Sign In</h1>
+    <h1>{{ mode === 'login' ? 'Sign In' : mode === 'forgot' ? 'Forgot Password' : 'Register Company' }}</h1>
 
-    <form class="login-form" (ngSubmit)="login()">
+    <form class="login-form" *ngIf="mode === 'login'" (ngSubmit)="login()">
       <label>
         Email
         <input
@@ -35,6 +35,72 @@
         {{ isSubmitting ? 'Signing in...' : 'Sign In' }}
       </button>
     </form>
+
+    <form class="login-form" *ngIf="mode === 'forgot'" (ngSubmit)="sendResetPassword()">
+      <label>
+        Registered Email
+        <input
+          type="email"
+          name="forgotEmail"
+          [(ngModel)]="forgotEmail"
+          placeholder="Enter registered email"
+          required
+        >
+      </label>
+
+      <button type="submit" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Sending...' : 'Send Temporary Password' }}
+      </button>
+    </form>
+
+    <form class="login-form" *ngIf="mode === 'signup'" (ngSubmit)="registerCompany()">
+      <label>
+        Company Name
+        <input name="companyName" [(ngModel)]="companySignup.companyName" placeholder="Enter company name" required>
+      </label>
+
+      <label>
+        Your Name
+        <input name="signupName" [(ngModel)]="companySignup.name" placeholder="Enter your name" required>
+      </label>
+
+      <label>
+        Email
+        <input type="email" name="signupEmail" [(ngModel)]="companySignup.email" placeholder="Enter email" required>
+      </label>
+
+      <label>
+        Password
+        <span class="password-field">
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            name="signupPassword"
+            [(ngModel)]="companySignup.password"
+            placeholder="Create password"
+            required
+          >
+          <button type="button" class="toggle-password" (click)="togglePasswordVisibility()">
+            {{ showPassword ? 'Hide' : 'Show' }}
+          </button>
+        </span>
+      </label>
+
+      <button type="submit" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Registering...' : 'Register Company' }}
+      </button>
+    </form>
+
+    <div class="auth-links">
+      <button type="button" class="link-button" *ngIf="mode !== 'login'" (click)="setMode('login')">
+        Back to sign in
+      </button>
+      <button type="button" class="link-button" *ngIf="mode !== 'forgot'" (click)="setMode('forgot')">
+        Forgot password?
+      </button>
+      <button type="button" class="link-button" *ngIf="mode !== 'signup'" (click)="setMode('signup')">
+        Register your company
+      </button>
+    </div>
 
     <p class="message" *ngIf="message">{{ message }}</p>
   </div>

@@ -70,6 +70,8 @@ public class SecurityConfig {
 
                         // Public endpoints
                         .requestMatchers("/users/login").permitAll()
+                        .requestMatchers("/users/company-signup").permitAll()
+                        .requestMatchers("/users/forgot-password").permitAll()
 
                         // Swagger
                         .requestMatchers(

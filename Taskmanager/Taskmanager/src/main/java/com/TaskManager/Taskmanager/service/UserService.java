@@ -7,10 +7,12 @@ import com.TaskManager.Taskmanager.repository.CompanyRepository;
 import com.TaskManager.Taskmanager.repository.UserRepository;
 import com.TaskManager.Taskmanager.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.MailException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,6 +33,9 @@ public class UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private EmailService emailService;
 
     @Transactional
     public ApiResponse<Void> createUser(UserRequestDTO dto, String loggedInRole, Integer loggedInCompanyId) {
@@ -98,6 +103,81 @@ public class UserService {
                 "SUPER_ADMIN".equals(loggedInRole)
                         ? "Company and company administrator created successfully"
                         : "User created successfully");
+    }
+
+    @Transactional
+    public ApiResponse<Void> signupCompany(CompanySignupDTO dto) {
+        if (dto.getCompanyName() == null || dto.getCompanyName().trim().isEmpty()) {
+            return new ApiResponse<>(false, "Company name is required");
+        }
+        if (dto.getName() == null || dto.getName().trim().isEmpty()) {
+            return new ApiResponse<>(false, "Your name is required");
+        }
+        if (dto.getEmail() == null || dto.getEmail().trim().isEmpty()) {
+            return new ApiResponse<>(false, "Email is required");
+        }
+        if (dto.getPassword() == null || dto.getPassword().isEmpty()) {
+            return new ApiResponse<>(false, "Password is required");
+        }
+
+        String email = dto.getEmail().trim();
+        String companyName = dto.getCompanyName().trim();
+
+        if (userRepository.findByEmail(email).isPresent()) {
+            return new ApiResponse<>(false, "Email is already registered");
+        }
+        if (companyRepository.existsByName(companyName)) {
+            return new ApiResponse<>(false, "Company name is already registered");
+        }
+
+        int companyId = companyRepository.create(companyName);
+
+        User user = new User();
+        user.setName(dto.getName().trim());
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        user.setRole("COMPANY_ADMIN");
+        user.setStatus(true);
+        user.setCompanyId(companyId);
+
+        userRepository.save(user);
+
+        return new ApiResponse<>(true, "Company registered successfully. You can login now.");
+    }
+
+    public ApiResponse<Void> forgotPassword(ForgotPasswordDTO dto) {
+        if (dto.getEmail() == null || dto.getEmail().trim().isEmpty()) {
+            return new ApiResponse<>(false, "Email is required");
+        }
+
+        if (!emailService.isMailConfigured()) {
+            return new ApiResponse<>(false,
+                    "Email service is not configured. Set MAIL_USERNAME and MAIL_PASSWORD, then restart backend.");
+        }
+
+        Optional<User> userOptional = userRepository.findByEmail(dto.getEmail().trim());
+        if (userOptional.isEmpty()) {
+            return new ApiResponse<>(false, "Email is not registered");
+        }
+
+        User user = userOptional.get();
+        if (!user.getStatus()) {
+            return new ApiResponse<>(false, "User is deactivated");
+        }
+
+        String temporaryPassword = generateTemporaryPassword();
+        String body = "Hello " + user.getName() + ",\n\n"
+                + "Your temporary CoreQueue password is: " + temporaryPassword + "\n\n"
+                + "Please login and change your password from Change Password.\n\n"
+                + "Regards,\nCoreQueue";
+
+        try {
+            emailService.sendEmail(user.getEmail(), "CoreQueue password reset", body);
+            userRepository.updatePassword(user.getId(), passwordEncoder.encode(temporaryPassword));
+            return new ApiResponse<>(true, "Temporary password sent to your registered email");
+        } catch (MailException ex) {
+            return new ApiResponse<>(false, "Could not send reset email. Check Gmail app password and SMTP access.");
+        }
     }
 
     public List<User> getUsersByRole(String role, String loggedInRole, Integer companyId) {
@@ -271,5 +351,15 @@ public class UserService {
         return new ApiResponse<>(true,
                 "Users fetched successfully",
                 userRepository.findAllByCompany(companyId));
+    }
+
+    private String generateTemporaryPassword() {
+        String chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789@#$";
+        SecureRandom random = new SecureRandom();
+        StringBuilder password = new StringBuilder("Temp@");
+        for (int i = 0; i < 8; i++) {
+            password.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return password.toString();
     }
 }

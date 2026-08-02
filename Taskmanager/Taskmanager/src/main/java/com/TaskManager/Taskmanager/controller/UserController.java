@@ -35,6 +35,16 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/company-signup")
+    public ResponseEntity<ApiResponse<Void>> signupCompany(@RequestBody CompanySignupDTO dto) {
+        return ResponseEntity.ok(userService.signupCompany(dto));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<Void>> forgotPassword(@RequestBody ForgotPasswordDTO dto) {
+        return ResponseEntity.ok(userService.forgotPassword(dto));
+    }
+
     @PostMapping("/change-password")
     public ResponseEntity<ApiResponse<Void>> changePassword(
             @RequestBody ChangePasswordDTO dto,
